@@ -8,19 +8,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-  @ExceptionHandler(InvalidCredentialsException.class)
-  public ResponseEntity<?> handleInvalidCredentials(InvalidCredentialsException e) {
-    return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
-  }
-
-  @ExceptionHandler(BadRequestException.class)
-  public ResponseEntity<?> handleBadRequest(BadRequestException e) {
-    return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-  }
-
   @ExceptionHandler(Exception.class)
   public ResponseEntity<?> handleGlobalException(Exception e) {
-    return ResponseBuilder.internalServerError();
+//    return ResponseBuilder.internalServerError();
+    return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
   }
 }

@@ -1,10 +1,13 @@
 package com.example.userpost.controller;
 
 import com.example.userpost.dto.auth.ChangePasswordRequest;
+import com.example.userpost.dto.auth.JwtInfo;
 import com.example.userpost.dto.auth.LoginRequest;
 import com.example.userpost.dto.auth.RegisterRequest;
 import com.example.userpost.service.IAuthService;
+import com.example.userpost.util.MessageConst;
 import com.example.userpost.util.ResponseBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +26,15 @@ public class AuthController {
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-    return ResponseBuilder.success(authService.register(request));
+    if (!authService.validateRequiredFields(request)) {
+      return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.MISSING_REQUIRED_FIELDS);
+    } else if (!authService.validateInputFormat(request)) {
+      return ResponseBuilder.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), MessageConst.INVALID_INPUT_FORMAT);
+    } else if (authService.isUsernameExist(request.getUsername()) || authService.isEmailExist(request.getEmail())) {
+      return ResponseBuilder.error(HttpStatus.CONFLICT.value(), MessageConst.EMAIL_OR_USERNAME_EXISTS);
+    } else {
+      return ResponseBuilder.build(HttpStatus.CREATED.value(), MessageConst.REGISTER_SUCCESS, authService.register(request));
+    }
   }
 
   @PostMapping("/login")

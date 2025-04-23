@@ -1,24 +1,25 @@
 package com.example.userpost.util;
 
 import com.example.userpost.dto.base.BaseResponse;
-import com.example.userpost.dto.base.Meta;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class ResponseBuilder {
   public static <T> ResponseEntity<BaseResponse<T>> success(T data) {
-    Meta meta = new Meta(HttpStatus.OK.value(), "Success");
-    return ResponseEntity.ok(new BaseResponse<>(meta, data));
+    return build(HttpStatus.OK.value(), MessageConst.SUCCESS, data);
   }
 
   public static <T> ResponseEntity<BaseResponse<T>> error(int code, String message) {
-    return ResponseEntity
-      .status(code)
-      .body(new BaseResponse<>(new Meta(code, message), null));
+    return build(code, message, null);
   }
 
   public static <T> ResponseEntity<BaseResponse<T>> internalServerError() {
-    String message = "Internal Server Error";
-    return error(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
+    return error(HttpStatus.INTERNAL_SERVER_ERROR.value(), MessageConst.INTERNAL_SERVER_ERROR);
+  }
+
+  public static <T> ResponseEntity<BaseResponse<T>> build(int code, String message, T data) {
+    return ResponseEntity
+      .status(code)
+      .body(new BaseResponse<>(code, message, data));
   }
 }
