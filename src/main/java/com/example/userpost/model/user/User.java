@@ -1,36 +1,21 @@
 package com.example.userpost.model.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
-@Table(name = "users",
-  uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"username"}),
-    @UniqueConstraint(columnNames = {"email"})
-  },
-  indexes = {
-    @Index(name = "idx_username", columnList = "username"),
-    @Index(name = "idx_email", columnList = "email")
-  })
+@Table(name = "users")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class User {
-
   @Id
   @Column(length = 32, nullable = false)
-  private String id = UUID.randomUUID().toString().replace("-", "");
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private String id;
 
   @Column(length = 50, nullable = false, unique = true)
   private String username;
