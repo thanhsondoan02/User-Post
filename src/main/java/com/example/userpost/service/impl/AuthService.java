@@ -70,8 +70,10 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public String changePassword(ChangePasswordRequest request) {
-    return null;
+  public void changePassword(String newPassword) {
+    var user = getAuthUser();
+    user.setPasswordHash(passwordEncoder.encode(newPassword));
+    userRepository.save(user);
   }
 
   @Override
@@ -89,16 +91,6 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public boolean isUsernameExist(String username) {
-    return userRepository.findByUsername(username).isPresent();
-  }
-
-  @Override
-  public boolean isEmailExist(String email) {
-    return userRepository.findByEmail(email).isPresent();
-  }
-
-  @Override
   public boolean validateLoginFields(LoginRequest request) {
     return request.getEmail() != null && request.getPassword() != null;
   }
@@ -110,7 +102,23 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public User getUserByEmail(String email) {
-    return userRepository.findByEmail(email).orElse(null);
+  public boolean validateChangePasswordFields(ChangePasswordRequest request) {
+    return request.getOldPassword() != null && request.getNewPassword() != null;
+  }
+
+  @Override
+  public boolean validateChangePasswordFormat(ChangePasswordRequest request) {
+    return ValidationUtils.isPasswordValid(request.getOldPassword())
+      && ValidationUtils.isPasswordValid(request.getNewPassword());
+  }
+
+  @Override
+  public boolean isTruePassword(String password) {
+    return passwordEncoder.matches(password, getAuthUser().getPasswordHash());
+  }
+
+  private User getAuthUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return (User) authentication.getPrincipal();
   }
 }

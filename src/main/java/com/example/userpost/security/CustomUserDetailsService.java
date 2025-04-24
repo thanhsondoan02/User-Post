@@ -25,4 +25,3 @@ public class CustomUserDetailsService implements UserDetailsService {
       user.getUsername(), user.getPasswordHash(), new ArrayList<>());
   }
 }
-

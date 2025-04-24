@@ -19,15 +19,6 @@ public class UserService implements IUserService {
   }
 
   @Override
-  public UserDetails loadUserDetailByUsername(String username) {
-    User user = userRepository.findByUsername(username)
-      .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-    return new org.springframework.security.core.userdetails.User(
-      user.getUsername(), user.getPasswordHash(), new ArrayList<>());
-  }
-
-  @Override
   public UserListResponse getAllUsers() {
     return new UserListResponse(userRepository.findAll());
   }
@@ -40,5 +31,27 @@ public class UserService implements IUserService {
   @Override
   public UserListResponse getUserById(String id) {
     return null;
+  }
+
+  @Override
+  public User getUserByUsername(String username) {
+    return userRepository.findByUsername(username)
+      .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+  }
+
+  @Override
+  public User getUserByEmail(String email) {
+    return userRepository.findByEmail(email)
+      .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+  }
+
+  @Override
+  public boolean isUsernameExist(String username) {
+    return userRepository.existsByUsername(username);
+  }
+
+  @Override
+  public boolean isEmailExist(String email) {
+    return userRepository.existsByEmail(email);
   }
 }

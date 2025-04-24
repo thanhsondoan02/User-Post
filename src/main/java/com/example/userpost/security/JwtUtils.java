@@ -57,7 +57,6 @@ public class JwtUtils {
     }
   }
 
-
   private Key getSigningKey(String jwtSecret) {
     return new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS512.getJcaName());
   }

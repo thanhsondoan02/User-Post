@@ -14,7 +14,8 @@ public class ValidationUtils {
     "^(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W_]).{6,20}$"
   );
 
-  private ValidationUtils() {}
+  private ValidationUtils() {
+  }
 
   public static boolean isEmailValid(String email) {
     return email != null && EMAIL_REGEX.matcher(email).matches();
@@ -33,7 +34,7 @@ public class ValidationUtils {
   }
 
   public static boolean isDateOfBirthValid(LocalDate dateOfBirth) {
-    return dateOfBirth != null && dateOfBirth.isAfter(LocalDate.now());
+    return dateOfBirth != null && dateOfBirth.isBefore(LocalDate.now());
   }
 }
 
