@@ -11,4 +11,14 @@ public interface IAuthService {
   JwtInfo login(LoginRequest request);
 
   String changePassword(ChangePasswordRequest request);
+
+  boolean validateRequiredFields(RegisterRequest request);
+
+  boolean validateInputFormat(RegisterRequest request);
+
+  boolean isUsernameExist(String username);
+
+  boolean isEmailExist(String email);
+
+  boolean validateRequiredFields(LoginRequest request);
 }

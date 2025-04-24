@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class BaseResponse<T> {
-  private Meta meta;
+  private int code;
+  private String message;
   private T data;
 }
