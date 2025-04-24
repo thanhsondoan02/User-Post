@@ -1,6 +1,5 @@
 package com.example.userpost.security;
 
-import com.example.userpost.service.impl.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,9 +19,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtUtils jwtUtils;
 
-  private final UserService userService;
+  private final CustomUserDetailsService userService;
 
-  public JwtAuthenticationFilter(JwtUtils jwtUtils, UserService userService) {
+  public JwtAuthenticationFilter(JwtUtils jwtUtils, CustomUserDetailsService userService) {
     this.jwtUtils = jwtUtils;
     this.userService = userService;
   }
@@ -35,7 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String token = header.substring(7);
       if (jwtUtils.validateJwtToken(token)) {
         String username = jwtUtils.getUsernameFromJwt(token);
-        UserDetails userDetails = userService.loadUserDetailByUsername(username);
+        UserDetails userDetails = userService.loadUserByUsername(username);
         UsernamePasswordAuthenticationToken authentication =
           new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

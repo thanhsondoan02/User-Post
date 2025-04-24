@@ -1,10 +1,12 @@
 package com.example.userpost.dto.auth;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 public class RegisterRequest {
   private String username;
   private String email;

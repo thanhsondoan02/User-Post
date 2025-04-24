@@ -8,6 +8,7 @@ import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import com.example.userpost.security.JwtUtils;
 import com.example.userpost.service.IAuthService;
+import com.example.userpost.util.ValidationUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,9 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.regex.Pattern;
 
 @Service
 public class AuthService implements IAuthService {
@@ -58,13 +56,13 @@ public class AuthService implements IAuthService {
       .build();
     userRepository.save(user);
 
-    return login(new LoginRequest(username, password));
+    return login(username, password);
   }
 
   @Override
-  public JwtInfo login(LoginRequest request) {
+  public JwtInfo login(String username, String password) {
     Authentication authentication = authenticationManager.authenticate(
-      new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+      new UsernamePasswordAuthenticationToken(username, password));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
     String token = jwtUtils.generateToken((UserDetails) authentication.getPrincipal());
@@ -77,30 +75,17 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public boolean validateRequiredFields(RegisterRequest request) {
+  public boolean validateRegisterFields(RegisterRequest request) {
     return request.getUsername() != null && request.getEmail() != null && request.getPassword() != null;
   }
 
   @Override
-  public boolean validateInputFormat(RegisterRequest request) {
-    final String username = request.getUsername();
-    if (username == null || username.length() < 6 || username.length() > 20) return false;
-
-    String email = request.getEmail();
-    Pattern emailRegex = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-    if (email == null || !emailRegex.matcher(email).matches()) return false;
-
-    final String password = request.getPassword();
-    String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W_]).{6,20}$";
-    if (password == null || !password.matches(passwordRegex)) return false;
-
-    final String gender = request.getGender();
-    if (gender != null && !(gender.equals("M") || gender.equals("F"))) return false;
-
-    final LocalDate dateOfBirth = request.getDateOfBirth();
-    if (dateOfBirth != null && dateOfBirth.isAfter(LocalDate.now())) return false;
-
-    return true;
+  public boolean validateRegisterFormat(RegisterRequest request) {
+    return ValidationUtils.isUsernameValid(request.getUsername())
+      && ValidationUtils.isEmailValid(request.getEmail())
+      && ValidationUtils.isPasswordValid(request.getPassword())
+      && ValidationUtils.isGenderValid(request.getGender())
+      && ValidationUtils.isDateOfBirthValid(request.getDateOfBirth());
   }
 
   @Override
@@ -114,7 +99,18 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public boolean validateRequiredFields(LoginRequest request) {
-    return request.getUsername() != null && request.getPassword() != null;
+  public boolean validateLoginFields(LoginRequest request) {
+    return request.getEmail() != null && request.getPassword() != null;
+  }
+
+  @Override
+  public boolean validateLoginFormat(LoginRequest request) {
+    return ValidationUtils.isEmailValid(request.getEmail())
+      && ValidationUtils.isPasswordValid(request.getPassword());
+  }
+
+  @Override
+  public User getUserByEmail(String email) {
+    return userRepository.findByEmail(email).orElse(null);
   }
 }
