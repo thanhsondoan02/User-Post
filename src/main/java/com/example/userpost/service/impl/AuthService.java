@@ -86,8 +86,8 @@ public class AuthService implements IAuthService {
     return ValidationUtils.isUsernameValid(request.getUsername())
       && ValidationUtils.isEmailValid(request.getEmail())
       && ValidationUtils.isPasswordValid(request.getPassword())
-      && ValidationUtils.isGenderValid(request.getGender())
-      && ValidationUtils.isDateOfBirthValid(request.getDateOfBirth());
+      && (request.getGender() == null || ValidationUtils.isGenderValid(request.getGender()))
+      && (request.getDateOfBirth() == null || ValidationUtils.isDateOfBirthValid(request.getDateOfBirth()));
   }
 
   @Override

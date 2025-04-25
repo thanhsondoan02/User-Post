@@ -1,14 +1,13 @@
 package com.example.userpost.service.impl;
 
-import com.example.userpost.dto.user.UserListResponse;
+import com.example.userpost.dto.user.UserDto;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import com.example.userpost.service.IUserService;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService implements IUserService {
@@ -19,18 +18,14 @@ public class UserService implements IUserService {
   }
 
   @Override
-  public UserListResponse getAllUsers() {
-    return new UserListResponse(userRepository.findAll());
+  public List<UserDto> getAllUsers() {
+    return convertToListUserDto(userRepository.findAll());
   }
 
   @Override
-  public UserListResponse searchUsers(String key) {
-    return null;
-  }
-
-  @Override
-  public UserListResponse getUserById(String id) {
-    return null;
+  public List<UserDto> searchUsers(String key) {
+    List<User> users = userRepository.findByUsernameIgnoreCaseContainingOrFullNameIgnoreCaseContaining(key, key);
+    return convertToListUserDto(users);
   }
 
   @Override
@@ -53,5 +48,25 @@ public class UserService implements IUserService {
   @Override
   public boolean isEmailExist(String email) {
     return userRepository.existsByEmail(email);
+  }
+
+  private List<UserDto> convertToListUserDto(List<User> users) {
+    return users.stream()
+      .map(this::convertToUserDto)
+      .toList();
+  }
+
+  private UserDto convertToUserDto(User user) {
+    var builder = UserDto.builder()
+      .id(user.getId())
+      .username(user.getUsername())
+      .email(user.getEmail())
+      .fullName(user.getFullName())
+      .dateOfBirth(user.getDateOfBirth());
+    var gender = user.getGender();
+    if (gender != null) {
+      builder.gender(gender.toString());
+    }
+    return builder.build();
   }
 }

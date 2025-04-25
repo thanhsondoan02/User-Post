@@ -1,16 +1,16 @@
 package com.example.userpost.service;
 
-import com.example.userpost.dto.user.UserListResponse;
+import com.example.userpost.dto.user.UserDto;
 import com.example.userpost.model.user.User;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface IUserService {
-  UserListResponse getAllUsers();
+  List<UserDto> getAllUsers();
 
-  UserListResponse searchUsers(String key);
-
-  UserListResponse getUserById(String id);
+  List<UserDto> searchUsers(String key);
 
   User getUserByUsername(String username);
 
