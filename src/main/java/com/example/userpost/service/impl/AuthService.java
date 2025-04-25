@@ -117,7 +117,8 @@ public class AuthService implements IAuthService {
     return passwordEncoder.matches(password, getAuthUser().getPasswordHash());
   }
 
-  private User getAuthUser() {
+  @Override
+  public User getAuthUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     return (User) authentication.getPrincipal();
   }

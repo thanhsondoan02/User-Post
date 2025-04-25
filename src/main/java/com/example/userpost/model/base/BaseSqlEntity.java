@@ -32,11 +32,6 @@ public abstract class BaseSqlEntity implements Serializable {
   @Column(name = "state", nullable = false)
   protected State state = State.ACTIVE;
 
-  public enum State {
-    ACTIVE,
-    INACTIVE
-  }
-
   @PrePersist
   public void generateId() {
     if (this.id == null) {

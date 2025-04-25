@@ -36,5 +36,13 @@ public class ValidationUtils {
   public static boolean isDateOfBirthValid(LocalDate dateOfBirth) {
     return dateOfBirth != null && dateOfBirth.isBefore(LocalDate.now());
   }
+
+  public static boolean isPostTitleValid(String title) {
+    return title != null && title.length() >= 5 && title.length() <= 20;
+  }
+
+  public static boolean isPostContentValid(String content) {
+    return content != null && content.length() >= 10 && content.length() <= 100;
+  }
 }
 

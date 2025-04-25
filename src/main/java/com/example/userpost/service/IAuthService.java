@@ -4,6 +4,7 @@ import com.example.userpost.dto.auth.ChangePasswordRequest;
 import com.example.userpost.dto.auth.JwtInfo;
 import com.example.userpost.dto.auth.LoginRequest;
 import com.example.userpost.dto.auth.RegisterRequest;
+import com.example.userpost.model.user.User;
 
 public interface IAuthService {
   JwtInfo register(RegisterRequest request);
@@ -25,4 +26,6 @@ public interface IAuthService {
   boolean validateChangePasswordFormat(ChangePasswordRequest request);
 
   boolean isTruePassword(String password);
+
+  User getAuthUser();
 }
