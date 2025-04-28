@@ -23,7 +23,7 @@ public final class MessageConst {
   public static final String POST_UPDATED_SUCCESSFULLY = "Post updated successfully";
   public static final String POST_DELETED_SUCCESSFULLY = "Post deleted successfully";
   public static final String POST_NOT_FOUND = "Post not found";
-  public static final String POSTS_FETCHED_SUCCESSFULLY = "Success";
+  public static final String USER_NOT_FOUND = "User not found";
 
   private MessageConst() {
   }

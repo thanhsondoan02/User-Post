@@ -47,4 +47,9 @@ public class UserService implements IUserService {
   public boolean isEmailExist(String email) {
     return userRepository.existsByEmail(email);
   }
+
+  @Override
+  public boolean isUserIdExist(String id) {
+    return userRepository.existsById(id);
+  }
 }

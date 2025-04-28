@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -27,6 +28,7 @@ public abstract class BaseMongoEntity implements Serializable {
   private Instant createdAt;
 
   @Field("updated_at")
+  @LastModifiedDate
   private Instant updatedAt;
 
   @Field("state")

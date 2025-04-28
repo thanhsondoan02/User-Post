@@ -17,4 +17,6 @@ public interface IUserService {
   boolean isUsernameExist(String username);
 
   boolean isEmailExist(String email);
+
+  boolean isUserIdExist(String id);
 }

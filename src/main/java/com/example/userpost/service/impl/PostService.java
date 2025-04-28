@@ -10,6 +10,8 @@ import com.example.userpost.service.IPostService;
 import com.example.userpost.util.ValidationUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PostService implements IPostService {
 
@@ -69,5 +71,25 @@ public class PostService implements IPostService {
   @Override
   public void deletePost(String id) {
     postRepository.deleteById(id);
+  }
+
+  @Override
+  public List<Post> getAll() {
+    return postRepository.findActivePost();
+  }
+
+  @Override
+  public List<Post> searchPostByTitle(String title) {
+    return postRepository.findByTitle(title);
+  }
+
+  @Override
+  public List<Post> searchPostByUser(String userId) {
+    return postRepository.findByUserId(userId);
+  }
+
+  @Override
+  public List<Post> searchPostByTitleAndUser(String title, String userId) {
+    return postRepository.findByTitleAndUserId(title, userId);
   }
 }
