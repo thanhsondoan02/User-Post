@@ -1,5 +1,6 @@
 package com.example.userpost.service.impl;
 
+import com.example.userpost.constant.State;
 import com.example.userpost.dto.request.post.CreatePostRequestDto;
 import com.example.userpost.dto.request.post.UpdatePostRequestDto;
 import com.example.userpost.dto.response.post.PostResponseDto;
@@ -53,7 +54,7 @@ public class PostService implements IPostService {
 
   @Override
   public Post getPostById(String id) {
-    return postRepository.findById(id).orElse(null);
+    return postRepository.findActiveById(id);
   }
 
   @Override
@@ -70,7 +71,11 @@ public class PostService implements IPostService {
 
   @Override
   public void deletePost(String id) {
-    postRepository.deleteById(id);
+    Post post = postRepository.findById(id).orElse(null);
+    if (post != null) {
+      post.setState(State.INACTIVE);
+      postRepository.save(post);
+    }
   }
 
   @Override

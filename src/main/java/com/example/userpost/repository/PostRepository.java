@@ -10,6 +10,9 @@ public interface PostRepository extends MongoRepository<Post, String> {
   @Query("{'state': 1}")
   List<Post> findActivePost();
 
+  @Query("{'_id': ?0, 'state': 1}")
+  Post findActiveById(String id);
+
   @Query("{'userId': ?0, 'state': 1}")
   List<Post> findByUserId(String userId);
 
