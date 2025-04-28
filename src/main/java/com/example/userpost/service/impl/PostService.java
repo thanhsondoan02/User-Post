@@ -1,6 +1,7 @@
 package com.example.userpost.service.impl;
 
 import com.example.userpost.dto.request.post.CreatePostRequestDto;
+import com.example.userpost.dto.request.post.UpdatePostRequestDto;
 import com.example.userpost.dto.response.post.PostResponseDto;
 import com.example.userpost.model.post.Post;
 import com.example.userpost.repository.PostRepository;
@@ -35,5 +36,38 @@ public class PostService implements IPostService {
   public boolean validateCreateFormat(CreatePostRequestDto request) {
     return ValidationUtils.isPostTitleValid(request.getTitle())
       && ValidationUtils.isPostContentValid(request.getContent());
+  }
+
+  @Override
+  public boolean validateUpdateFields(UpdatePostRequestDto request) {
+    return request.getTitle() != null && request.getContent() != null;
+  }
+
+  @Override
+  public boolean validateUpdateFormat(UpdatePostRequestDto request) {
+    return ValidationUtils.isPostTitleValid(request.getTitle())
+      && ValidationUtils.isPostContentValid(request.getContent());
+  }
+
+  @Override
+  public Post getPostById(String id) {
+    return postRepository.findById(id).orElse(null);
+  }
+
+  @Override
+  public PostResponseDto updatePost(String id, String title, String content) {
+    Post post = postRepository.findById(id).orElse(null);
+    if (post != null) {
+      post.setTitle(title);
+      post.setContent(content);
+      return new PostResponseDto(postRepository.save(post));
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public void deletePost(String id) {
+    postRepository.deleteById(id);
   }
 }
