@@ -1,9 +1,10 @@
 package com.example.userpost.service.impl;
 
-import com.example.userpost.dto.auth.ChangePasswordRequest;
-import com.example.userpost.dto.auth.JwtInfo;
-import com.example.userpost.dto.auth.LoginRequest;
-import com.example.userpost.dto.auth.RegisterRequest;
+import com.example.userpost.constant.Gender;
+import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
+import com.example.userpost.dto.request.auth.LoginRequestDto;
+import com.example.userpost.dto.request.auth.RegisterRequestDto;
+import com.example.userpost.dto.response.auth.JwtResponseDto;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import com.example.userpost.security.JwtUtils;
@@ -33,40 +34,33 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public JwtInfo register(RegisterRequest request) {
+  public JwtResponseDto register(RegisterRequestDto request) {
     String username = request.getUsername();
     String password = request.getPassword();
 
     String hashedPassword = passwordEncoder.encode(password);
 
-    User.Gender gender;
-    try {
-      gender = User.Gender.valueOf(request.getGender().toUpperCase());
-    } catch (Exception e) {
+    Gender gender;
+    if (request.getGender() != null) {
+      gender = Gender.fromCode(request.getGender());
+    } else {
       gender = null;
     }
 
-    var user = User.builder()
-      .username(username)
-      .email(request.getEmail())
-      .passwordHash(hashedPassword)
-      .fullName(request.getFullName())
-      .gender(gender)
-      .dateOfBirth(request.getDateOfBirth())
-      .build();
+    var user = new User(username, request.getEmail(), hashedPassword, request.getFullName(), gender, request.getDateOfBirth());
     userRepository.save(user);
 
     return login(username, password);
   }
 
   @Override
-  public JwtInfo login(String username, String password) {
+  public JwtResponseDto login(String username, String password) {
     Authentication authentication = authenticationManager.authenticate(
       new UsernamePasswordAuthenticationToken(username, password));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
     String token = jwtUtils.generateToken((UserDetails) authentication.getPrincipal());
-    return new JwtInfo(token);
+    return new JwtResponseDto(token);
   }
 
   @Override
@@ -77,12 +71,12 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public boolean validateRegisterFields(RegisterRequest request) {
+  public boolean validateRegisterFields(RegisterRequestDto request) {
     return request.getUsername() != null && request.getEmail() != null && request.getPassword() != null;
   }
 
   @Override
-  public boolean validateRegisterFormat(RegisterRequest request) {
+  public boolean validateRegisterFormat(RegisterRequestDto request) {
     return ValidationUtils.isUsernameValid(request.getUsername())
       && ValidationUtils.isEmailValid(request.getEmail())
       && ValidationUtils.isPasswordValid(request.getPassword())
@@ -91,23 +85,23 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public boolean validateLoginFields(LoginRequest request) {
+  public boolean validateLoginFields(LoginRequestDto request) {
     return request.getEmail() != null && request.getPassword() != null;
   }
 
   @Override
-  public boolean validateLoginFormat(LoginRequest request) {
+  public boolean validateLoginFormat(LoginRequestDto request) {
     return ValidationUtils.isEmailValid(request.getEmail())
       && ValidationUtils.isPasswordValid(request.getPassword());
   }
 
   @Override
-  public boolean validateChangePasswordFields(ChangePasswordRequest request) {
+  public boolean validateChangePasswordFields(ChangePasswordRequestDto request) {
     return request.getOldPassword() != null && request.getNewPassword() != null;
   }
 
   @Override
-  public boolean validateChangePasswordFormat(ChangePasswordRequest request) {
+  public boolean validateChangePasswordFormat(ChangePasswordRequestDto request) {
     return ValidationUtils.isPasswordValid(request.getOldPassword())
       && ValidationUtils.isPasswordValid(request.getNewPassword());
   }

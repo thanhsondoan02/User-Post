@@ -1,4 +1,4 @@
-package com.example.userpost.util;
+package com.example.userpost.constant;
 
 public final class MessageConst {
 

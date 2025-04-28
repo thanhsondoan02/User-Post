@@ -1,11 +1,10 @@
 package com.example.userpost.model.base;
 
+import com.example.userpost.constant.State;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -13,29 +12,34 @@ import java.util.UUID;
 @MappedSuperclass
 @Getter
 @Setter
-@EntityListeners(AuditingEntityListener.class)
 public abstract class BaseSqlEntity implements Serializable {
 
   @Id
+  @NotNull
   @Column(name = "id", length = 32, nullable = false)
   protected String id;
 
-  @CreatedDate
+  @NotNull
   @Column(name = "created_at", nullable = false)
   protected Long createdAt;
 
-  @LastModifiedDate
-  @Column(name = "updated_at", nullable = false)
+  @Column(name = "updated_at")
   protected Long updatedAt;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "state", nullable = false)
-  protected State state = State.ACTIVE;
+  @NotNull
+  @Column(name = "state", nullable = false, columnDefinition = "TINYINT")
+  @Convert(converter = StateConverter.class)
+  protected State state;
 
-  @PrePersist
-  public void generateId() {
-    if (this.id == null) {
-      this.id = UUID.randomUUID().toString().replace("-", "");
-    }
+  protected BaseSqlEntity() {
+    id = UUID.randomUUID().toString().replace("-", "");
+    createdAt = System.currentTimeMillis();
+    updatedAt = null;
+    state = State.ACTIVE;
+  }
+
+  @PreUpdate
+  public void preUpdate() {
+    this.updatedAt = System.currentTimeMillis();
   }
 }

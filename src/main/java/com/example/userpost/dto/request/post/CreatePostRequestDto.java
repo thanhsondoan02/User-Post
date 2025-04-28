@@ -1,5 +1,6 @@
-package com.example.userpost.dto.post;
+package com.example.userpost.dto.request.post;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CreatePostRequest {
+public class CreatePostRequestDto {
+  @NotNull
   private String title;
+  @NotNull
   private String content;
 }

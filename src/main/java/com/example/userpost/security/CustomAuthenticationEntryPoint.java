@@ -1,6 +1,6 @@
 package com.example.userpost.security;
 
-import com.example.userpost.util.MessageConst;
+import com.example.userpost.constant.MessageConst;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

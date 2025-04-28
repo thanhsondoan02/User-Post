@@ -1,8 +1,8 @@
 package com.example.userpost.controller;
 
-import com.example.userpost.dto.post.CreatePostRequest;
+import com.example.userpost.constant.MessageConst;
+import com.example.userpost.dto.request.post.CreatePostRequestDto;
 import com.example.userpost.service.IPostService;
-import com.example.userpost.util.MessageConst;
 import com.example.userpost.util.ResponseBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class PostController {
   }
 
   @PostMapping
-  public ResponseEntity<?> createPost(@RequestBody CreatePostRequest request) {
+  public ResponseEntity<?> createPost(@RequestBody CreatePostRequestDto request) {
     if (!postService.validateCreateFields(request)) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.MISSING_REQUIRED_FIELD);
     } else if (!postService.validateCreateFormat(request)) {

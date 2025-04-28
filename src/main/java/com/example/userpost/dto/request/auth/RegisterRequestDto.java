@@ -1,18 +1,16 @@
-package com.example.userpost.dto.auth;
+package com.example.userpost.dto.request.auth;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
-public class RegisterRequest {
+public class RegisterRequestDto {
   private String username;
   private String email;
   private String password;
   private String fullName;
-  private String gender;
-  private LocalDate dateOfBirth;
+  private Integer gender;
+  private Long dateOfBirth;
 }
 

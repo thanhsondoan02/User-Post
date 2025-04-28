@@ -1,11 +1,11 @@
 package com.example.userpost.controller;
 
-import com.example.userpost.dto.auth.ChangePasswordRequest;
-import com.example.userpost.dto.auth.LoginRequest;
-import com.example.userpost.dto.auth.RegisterRequest;
+import com.example.userpost.constant.MessageConst;
+import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
+import com.example.userpost.dto.request.auth.LoginRequestDto;
+import com.example.userpost.dto.request.auth.RegisterRequestDto;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IUserService;
-import com.example.userpost.util.MessageConst;
 import com.example.userpost.util.ResponseBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+  public ResponseEntity<?> register(@RequestBody RegisterRequestDto request) {
     if (!authService.validateRegisterFields(request)) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.MISSING_REQUIRED_FIELD);
     } else if (!authService.validateRegisterFormat(request)) {
@@ -38,7 +38,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+  public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
     if (!authService.validateLoginFields(request)) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.MISSING_REQUIRED_FIELD);
     } else if (!authService.validateLoginFormat(request)) {
@@ -59,7 +59,7 @@ public class AuthController {
   }
 
   @PutMapping("/change-password")
-  public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+  public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequestDto request) {
     var oldPassword = request.getOldPassword();
     var newPassword = request.getNewPassword();
     if (!authService.validateChangePasswordFields(request)) {

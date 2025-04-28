@@ -1,4 +1,4 @@
-package com.example.userpost.dto.auth;
+package com.example.userpost.dto.request.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class LoginRequest {
+public class LoginRequestDto {
   private String email;
   private String password;
 }

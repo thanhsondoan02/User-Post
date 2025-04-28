@@ -1,11 +1,11 @@
-package com.example.userpost.dto.base;
+package com.example.userpost.dto.response.base;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BaseResponse<T> {
+public class BaseResponseDto<T> {
   private int status;
   private String message;
   private T data;

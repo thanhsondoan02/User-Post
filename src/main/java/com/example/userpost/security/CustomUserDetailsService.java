@@ -1,5 +1,6 @@
 package com.example.userpost.security;
 
+import com.example.userpost.constant.State;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
   }
 
   public UserDetails loadUserByUsername(String username) {
-    User user = userRepository.findByUsername(username)
+    User user = userRepository.findByUsernameAndState(username, State.ACTIVE)
       .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
     return new org.springframework.security.core.userdetails.User(

@@ -1,4 +1,4 @@
-package com.example.userpost.dto.auth;
+package com.example.userpost.dto.response.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class JwtInfo {
+public class JwtResponseDto {
   private String token;
 }
 

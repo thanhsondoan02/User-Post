@@ -1,6 +1,10 @@
 package com.example.userpost.util;
 
+import com.example.userpost.constant.Gender;
+
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
@@ -29,12 +33,32 @@ public class ValidationUtils {
     return username != null && username.length() >= 6 && username.length() <= 20;
   }
 
-  public static boolean isGenderValid(String gender) {
-    return gender != null && (gender.equals("M") || gender.equals("F"));
+  public static boolean isGenderValid(Integer gender) {
+    if (gender == null) return false;
+    try {
+      Gender.fromCode(gender);
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 
-  public static boolean isDateOfBirthValid(LocalDate dateOfBirth) {
-    return dateOfBirth != null && dateOfBirth.isBefore(LocalDate.now());
+  public static boolean isDateOfBirthValid(Long timestamp) {
+    if (timestamp == null) return false;
+
+    try {
+      Instant instant = Instant.ofEpochMilli(timestamp);
+      LocalDate dob = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+
+      LocalDate today = LocalDate.now();
+      LocalDate minDate = today.minusYears(80); // oldest allowed
+      LocalDate maxDate = today.minusYears(18); // youngest allowed
+
+      return dob.isAfter(minDate) && dob.isBefore(maxDate);
+
+    } catch (Exception e) {
+      return false; // e.g., timestamp too large/small
+    }
   }
 
   public static boolean isPostTitleValid(String title) {

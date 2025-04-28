@@ -1,11 +1,11 @@
-package com.example.userpost.dto.auth;
+package com.example.userpost.dto.request.auth;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ChangePasswordRequest {
+public class ChangePasswordRequestDto {
   private String oldPassword;
   private String newPassword;
 }

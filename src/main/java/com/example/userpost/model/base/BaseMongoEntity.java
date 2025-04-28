@@ -1,36 +1,49 @@
 package com.example.userpost.model.base;
 
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
+import com.example.userpost.constant.State;
+import jakarta.persistence.Convert;
+import jakarta.persistence.PreUpdate;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
 public abstract class BaseMongoEntity implements Serializable {
 
   @Id
+  @NotNull
   private String id;
 
   @Field("created_at")
-  @CreatedDate
+  @NotNull
   private Instant createdAt;
 
   @Field("updated_at")
-  @LastModifiedDate
   private Instant updatedAt;
 
   @Field("state")
-  @Builder.Default
   @Indexed
-  private State state = State.ACTIVE;
+  @NotNull
+  @Convert(converter = StateConverter.class)
+  private State state;
+
+  protected BaseMongoEntity() {
+    id = UUID.randomUUID().toString().replace("-", "");
+    createdAt = Instant.now();
+    updatedAt = null;
+    state = State.ACTIVE;
+  }
+
+  @PreUpdate
+  public void preUpdate() {
+    this.updatedAt = Instant.now();
+  }
 }
