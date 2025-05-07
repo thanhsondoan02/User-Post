@@ -34,7 +34,7 @@ public class SecurityConfig {
         e.authenticationEntryPoint(customAuthenticationEntryPoint)
       )
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/auth/register", "api/auth/login").permitAll()
+        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
         .anyRequest().authenticated()
       )

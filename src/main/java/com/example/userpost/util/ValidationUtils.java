@@ -68,5 +68,9 @@ public class ValidationUtils {
   public static boolean isPostContentValid(String content) {
     return content != null && content.length() >= 10 && content.length() <= 100;
   }
+
+  public static boolean isGroupNameValid(String name) {
+    return name != null && !name.isEmpty() && name.length() <= 50;
+  }
 }
 

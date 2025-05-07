@@ -25,6 +25,10 @@ public final class MessageConst {
   public static final String POST_NOT_FOUND = "Post not found";
   public static final String USER_NOT_FOUND = "User not found";
 
+  // Group
+  public static final String DUPLICATE_USER_ID = "Duplicate userId";
+  public static final String INVALID_ROLE = "Invalid role";
+
   private MessageConst() {
   }
 }
