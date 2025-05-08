@@ -4,6 +4,7 @@ import com.example.userpost.constant.GroupRole;
 import com.example.userpost.constant.MessageConst;
 import com.example.userpost.dto.request.group.CreateGroupRequestDto;
 import com.example.userpost.dto.request.group.GroupUserRequestDto;
+import com.example.userpost.dto.request.group.UpdateGroupRequestDto;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IGroupService;
 import com.example.userpost.service.IUserService;
@@ -11,10 +12,7 @@ import com.example.userpost.util.ResponseBuilder;
 import com.example.userpost.util.ValidationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,14 +73,28 @@ public class GroupController {
     return ResponseBuilder.success(groupService.createGroup(request));
   }
 
-//  @GetMapping
+  //  @GetMapping
 //  public ResponseEntity<?> searchPost(@RequestParam(required = false) String title, @RequestParam(required = false) String userId) {
 //  }
 //
-//  @PutMapping("/{id}")
-//  public ResponseEntity<?> updatePost(@PathVariable("id") String id, @RequestBody UpdatePostRequestDto request) {
-//
-//  }
+  @PutMapping("/{groupId}")
+  public ResponseEntity<?> updateGroupInfo(@PathVariable("groupId") String groupId, @RequestBody UpdateGroupRequestDto request) {
+    var name = request.getName();
+    if (name != null && !ValidationUtils.isGroupNameValid(name)) {
+      return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.INVALID_INPUT_FORMAT);
+    }
+    if (!groupService.isGroupExistAndActive(groupId)) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.GROUP_NOT_FOUND);
+    }
+    if (!groupService.isInGroup(authService.getAuthUser().getId(), groupId)) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+
+    groupService.updateGroup(groupId, request);
+    return ResponseBuilder.success(null);
+  }
+
+
 //
 //  @DeleteMapping("/{id}")
 //  public ResponseEntity<?> deletePost(@PathVariable("id") String id) {
