@@ -55,9 +55,7 @@ public class GroupController {
 
     // Check if users' role is valid
     for (var userRole : users) {
-      try {
-        userRole.getRole();
-      } catch (IllegalArgumentException e) {
+      if (userRole.getRole() == null) {
         return ResponseBuilder.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), MessageConst.INVALID_ROLE);
       }
     }
@@ -73,10 +71,6 @@ public class GroupController {
     return ResponseBuilder.success(groupService.createGroup(request));
   }
 
-  //  @GetMapping
-//  public ResponseEntity<?> searchPost(@RequestParam(required = false) String title, @RequestParam(required = false) String userId) {
-//  }
-//
   @PutMapping("/{groupId}")
   public ResponseEntity<?> updateGroupInfo(@PathVariable("groupId") String groupId, @RequestBody UpdateGroupRequestDto request) {
     var name = request.getName();
@@ -94,10 +88,72 @@ public class GroupController {
     return ResponseBuilder.success(null);
   }
 
+  @DeleteMapping("/{groupId}")
+  public ResponseEntity<?> deleteGroup(@PathVariable("groupId") String groupId) {
+    if (!groupService.isGroupExistAndActive(groupId)) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.GROUP_NOT_FOUND);
+    }
+    if (!groupService.isGroupAdmin(authService.getAuthUser().getId(), groupId)) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
 
-//
-//  @DeleteMapping("/{id}")
-//  public ResponseEntity<?> deletePost(@PathVariable("id") String id) {
-//
-//  }
+    groupService.deleteGroup(groupId);
+    return ResponseBuilder.success();
+  }
+
+  @PostMapping("/{groupId}/members")
+  public ResponseEntity<?> addUserToGroup(@PathVariable("groupId") String groupId, @RequestBody GroupUserRequestDto request) {
+    if (request.getRole() == null) {
+      return ResponseBuilder.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), MessageConst.INVALID_ROLE);
+    }
+    if (!groupService.isGroupExistAndActive(groupId)) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.GROUP_NOT_FOUND);
+    }
+    if (!groupService.isGroupAdmin(authService.getAuthUser().getId(), groupId)) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+    if (!userService.isUserIdExistAndActive(request.getUserId())) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.USER_NOT_FOUND);
+    }
+    if (groupService.isInGroup(request.getUserId(), groupId)) {
+      return ResponseBuilder.error(HttpStatus.CONFLICT.value(), MessageConst.USER_ALREADY_IN_GROUP);
+    }
+
+    groupService.addUserToGroup(groupId, request);
+    return ResponseBuilder.success();
+  }
+
+  @DeleteMapping("/{groupId}/members/{userId}")
+  public ResponseEntity<?> deleteUserFromGroup(@PathVariable("groupId") String groupId, @PathVariable("userId") String userId) {
+    if (!groupService.isGroupExistAndActive(groupId)) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.GROUP_NOT_FOUND);
+    }
+    if (!groupService.isGroupAdmin(authService.getAuthUser().getId(), groupId)) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+    if (!groupService.isInGroup(userId, groupId)) {
+      return ResponseBuilder.error(HttpStatus.CONFLICT.value(), MessageConst.USER_NOT_FOUND);
+    }
+    groupService.removeUserFromGroup(groupId, userId);
+    return ResponseBuilder.success();
+  }
+
+  @GetMapping()
+  public ResponseEntity<?> getGroupList() {
+    var userId = authService.getAuthUser().getId();
+    var groups = groupService.getGroupList(userId);
+    return ResponseBuilder.success(groups);
+  }
+
+  @GetMapping("/{groupId}")
+  public ResponseEntity<?> getGroupInfo(@PathVariable("groupId") String groupId) {
+    var userId = authService.getAuthUser().getId();
+    if (!groupService.isGroupExistAndActive(groupId)) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.GROUP_NOT_FOUND);
+    }
+    if (!groupService.isInGroup(userId, groupId)) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+    return ResponseBuilder.success(groupService.getGroupInfo(groupId));
+  }
 }

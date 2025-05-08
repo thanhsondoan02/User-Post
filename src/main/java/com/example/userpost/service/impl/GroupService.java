@@ -1,12 +1,16 @@
 package com.example.userpost.service.impl;
 
+import com.example.userpost.constant.State;
 import com.example.userpost.dto.request.group.CreateGroupRequestDto;
+import com.example.userpost.dto.request.group.GroupUserRequestDto;
 import com.example.userpost.dto.request.group.UpdateGroupRequestDto;
-import com.example.userpost.dto.response.group.CreateGroupResponseDto;
+import com.example.userpost.dto.response.group.GroupListResponseDto;
+import com.example.userpost.dto.response.group.GroupResponseDto;
 import com.example.userpost.model.group.Group;
 import com.example.userpost.model.group.GroupUser;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.GroupRepository;
+import com.example.userpost.repository.GroupUserRepository;
 import com.example.userpost.service.IGroupService;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +20,15 @@ import java.util.ArrayList;
 public class GroupService implements IGroupService {
 
   private final GroupRepository groupRepository;
+  private final GroupUserRepository groupUserRepository;
 
-  public GroupService(GroupRepository groupRepository) {
+  public GroupService(GroupRepository groupRepository, GroupUserRepository groupUserRepository) {
     this.groupRepository = groupRepository;
+    this.groupUserRepository = groupUserRepository;
   }
 
   @Override
-  public CreateGroupResponseDto createGroup(CreateGroupRequestDto request) {
+  public GroupResponseDto createGroup(CreateGroupRequestDto request) {
     Group group = new Group(request.getName(), request.getThumbnail());
 
     var groupUsers = new ArrayList<GroupUser>();
@@ -35,7 +41,7 @@ public class GroupService implements IGroupService {
 
     Group savedGroup = groupRepository.save(group);
 
-    return new CreateGroupResponseDto(
+    return new GroupResponseDto(
       savedGroup.getId(),
       savedGroup.getName(),
       savedGroup.getThumbnail(),
@@ -55,7 +61,7 @@ public class GroupService implements IGroupService {
 
   @Override
   public boolean isInGroup(String userId, String groupId) {
-    return groupRepository.isInGroup(userId, groupId);
+    return groupRepository.isUserActiveInGroup(userId, groupId);
   }
 
   @Override
@@ -74,5 +80,61 @@ public class GroupService implements IGroupService {
     }
 
     groupRepository.save(group);
+  }
+
+  @Override
+  public void deleteGroup(String groupId) {
+    Group group = groupRepository.findActiveById(groupId)
+      .orElseThrow(() -> new RuntimeException("Group not found"));
+
+    group.setState(State.INACTIVE);
+    for (var groupUser : group.getGroupUsers()) {
+      groupUser.setState(State.INACTIVE);
+    }
+
+    groupRepository.save(group);
+  }
+
+  @Override
+  public void addUserToGroup(String groupId, GroupUserRequestDto request) {
+    var userId = request.getUserId();
+    var groupUser = groupRepository.findUserInGroupById(groupId, userId).orElse(null);
+    if (groupUser == null) {
+      // If this user hasn't been added to the group, insert a new record
+      var newGroupUser = new GroupUser(groupId, userId, request.getRole());
+      groupUserRepository.save(newGroupUser);
+    } else {
+      // If this user has been added to the group, check if they are inactive then update
+      if (groupUser.getState() == State.INACTIVE) {
+        groupUser.setState(State.ACTIVE);
+        groupUser.setRole(request.getRole());
+        groupUserRepository.save(groupUser);
+      } else {
+        throw new RuntimeException("User already in group");
+      }
+    }
+  }
+
+  @Override
+  public void removeUserFromGroup(String groupId, String userId) {
+    groupRepository.updateGroupUserState(groupId, userId, State.INACTIVE);
+  }
+
+  @Override
+  public GroupListResponseDto getGroupList(String userId) {
+    var groups = groupRepository.findActiveGroupsOfUser(userId);
+    return new GroupListResponseDto(groups);
+  }
+
+  @Override
+  public GroupResponseDto getGroupInfo(String groupId) {
+    Group group = groupRepository.findActiveById(groupId)
+      .orElseThrow(() -> new RuntimeException("Group not found"));
+    return new GroupResponseDto(
+      group.getId(),
+      group.getName(),
+      group.getThumbnail(),
+      groupRepository.getActiveUsersInGroup(groupId)
+    );
   }
 }

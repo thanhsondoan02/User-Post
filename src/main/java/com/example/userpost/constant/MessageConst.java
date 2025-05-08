@@ -29,6 +29,7 @@ public final class MessageConst {
   public static final String DUPLICATE_USER_ID = "Duplicate userId";
   public static final String INVALID_ROLE = "Invalid role";
   public static final String GROUP_NOT_FOUND = "Group not found";
+  public static final String USER_ALREADY_IN_GROUP = "User already in group";
 
   private MessageConst() {
   }

@@ -13,6 +13,10 @@ public class GroupUserRequestDto {
   private String role;
 
   public GroupRole getRole() {
-    return GroupRole.fromString(role);
+    try {
+      return GroupRole.fromString(role);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }

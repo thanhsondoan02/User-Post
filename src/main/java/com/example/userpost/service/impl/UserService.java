@@ -52,4 +52,9 @@ public class UserService implements IUserService {
   public boolean isUserIdExist(String id) {
     return userRepository.existsById(id);
   }
+
+  @Override
+  public boolean isUserIdExistAndActive(String id) {
+    return userRepository.existsAndActiveById(id);
+  }
 }

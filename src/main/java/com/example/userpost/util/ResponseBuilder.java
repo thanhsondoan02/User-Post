@@ -6,6 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class ResponseBuilder {
+  public static <T> ResponseEntity<BaseResponseDto<T>> success() {
+    return success(null);
+  }
+
   public static <T> ResponseEntity<BaseResponseDto<T>> success(T data) {
     return build(HttpStatus.OK.value(), MessageConst.SUCCESS, data);
   }

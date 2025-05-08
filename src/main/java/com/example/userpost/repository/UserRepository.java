@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, String> {
   List<User> searchByKeyword(@Param("keyword") String keyword);
 
   List<User> findAllByState(State state);
+
+  @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.id = :id AND u.state = 1")
+  boolean existsAndActiveById(@Param("id") String id);
 }
