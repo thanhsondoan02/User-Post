@@ -2,6 +2,8 @@ package com.example.userpost.util;
 
 import com.example.userpost.constant.Gender;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -71,6 +73,27 @@ public class ValidationUtils {
 
   public static boolean isGroupNameValid(String name) {
     return name != null && !name.isEmpty() && name.length() <= 50;
+  }
+
+  public static boolean isValidDomain(String domain) {
+    if (domain == null) return false;
+    try {
+      URL url = new URL(domain);
+      return url.getProtocol().equals("https");
+    } catch (MalformedURLException e) {
+      return false;
+    }
+  }
+
+  public static boolean isValidCallbackUrl(String domain, String callbackUrl) {
+    if (domain == null || callbackUrl == null) return false;
+    try {
+      URL domainUrl = new URL(domain);
+      URL cbUrl = new URL(callbackUrl);
+      return domainUrl.getHost().equals(cbUrl.getHost());
+    } catch (MalformedURLException e) {
+      return false;
+    }
   }
 }
 

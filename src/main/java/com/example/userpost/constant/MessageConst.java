@@ -9,6 +9,7 @@ public final class MessageConst {
   public static final String UNAUTHORIZED = "Unauthorized";
   public static final String ACCESS_DENIED = "Access denied";
   public static final String SUCCESS = "Success";
+  public static final String BAD_REQUEST = "Bad request";
 
   // Auth
   public static final String REGISTER_SUCCESS = "User registered successfully";

@@ -36,6 +36,7 @@ public class SecurityConfig {
       .authorizeHttpRequests(auth -> auth
         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
+        .requestMatchers("/openid/connections").permitAll()
         .anyRequest().authenticated()
       )
       .sessionManagement(session -> session
