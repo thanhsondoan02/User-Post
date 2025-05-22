@@ -14,16 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AcceptedConnection extends BaseSqlEntity {
-
-  @Column(name = "name", length = 100, nullable = false)
-  private String name;
-
-  @Column(name = "domain", nullable = false)
-  private String domain;
-
-  @Column(name = "callback_url", nullable = false)
-  private String callbackUrl;
+public class AcceptedConnection extends BaseConnection {
 
   @Column(name = "client_id", length = 32, nullable = false, unique = true)
   private String clientId;
@@ -34,19 +25,10 @@ public class AcceptedConnection extends BaseSqlEntity {
   @OneToMany(mappedBy = "connection", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Webhook> webhooks = new ArrayList<>();
 
-  public AcceptedConnection(PendingConnection connection) {
+  public AcceptedConnection(BaseConnection connection) {
     super();
     this.name = connection.getName();
     this.domain = connection.getDomain();
     this.callbackUrl = connection.getCallbackUrl();
-  }
-
-  public AcceptedConnection(String name, String domain, String callbackUrl, String clientId, String clientSecret) {
-    super();
-    this.name = name;
-    this.domain = domain;
-    this.callbackUrl = callbackUrl;
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
   }
 }

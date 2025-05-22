@@ -1,14 +1,15 @@
 package com.example.userpost.repository;
 
 import com.example.userpost.constant.State;
-import com.example.userpost.model.group.Group;
 import com.example.userpost.model.openid.PendingConnection;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PendingConnectionRepository extends JpaRepository<PendingConnection, String> {
@@ -21,4 +22,6 @@ public interface PendingConnectionRepository extends JpaRepository<PendingConnec
   void updateState(@Param("id") String id, @Param("state") State state);
 
   Optional<PendingConnection> findByIdAndState(String id, State state);
+
+  List<PendingConnection> findAllByState(@NotNull State state);
 }

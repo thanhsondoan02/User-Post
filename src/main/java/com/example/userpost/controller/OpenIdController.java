@@ -1,6 +1,7 @@
 package com.example.userpost.controller;
 
 import com.example.userpost.constant.ConnectionAction;
+import com.example.userpost.constant.ConnectionStatus;
 import com.example.userpost.constant.MessageConst;
 import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
@@ -38,6 +39,26 @@ public class OpenIdController {
 
     openIdService.addPendingConnections(request);
     return ResponseBuilder.success();
+  }
+
+  @GetMapping("/connections")
+  public ResponseEntity<?> getConnections(@RequestParam(required = false) String status) {
+    if (!authService.isAdmin()) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+
+    ConnectionStatus connectionStatus;
+    if (status != null) {
+      try {
+        connectionStatus = ConnectionStatus.fromString(status);
+      } catch (IllegalArgumentException e) {
+        return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
+      }
+    } else {
+      connectionStatus = null;
+    }
+
+    return ResponseBuilder.success(openIdService.getConnections(connectionStatus));
   }
 
   @PostMapping("/connections/{id}")
