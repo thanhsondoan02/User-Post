@@ -1,6 +1,7 @@
 package com.example.userpost.service.impl;
 
 import com.example.userpost.constant.Gender;
+import com.example.userpost.constant.Role;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
@@ -115,5 +116,10 @@ public class AuthService implements IAuthService {
   public User getAuthUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     return (User) authentication.getPrincipal();
+  }
+
+  @Override
+  public boolean isAdmin() {
+    return getAuthUser().getRole() == Role.ADMIN;
   }
 }

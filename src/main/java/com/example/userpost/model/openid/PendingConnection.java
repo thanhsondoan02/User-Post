@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "connected_servers")
+@Table(name = "pending_connections")
 @Getter
 @Setter
 @NoArgsConstructor
-public class ConnectedServer extends BaseSqlEntity {
+public class PendingConnection extends BaseSqlEntity {
 
   @Column(name = "name", length = 100, nullable = false)
   private String name;
@@ -25,21 +25,10 @@ public class ConnectedServer extends BaseSqlEntity {
   @Column(name = "callback_url", nullable = false)
   private String callbackUrl;
 
-  @Column(name = "client_id", length = 32, nullable = false, unique = true)
-  private String clientId;
-
-  @Column(name = "client_secret", nullable = false)
-  private String clientSecret;
-
-  @OneToMany(mappedBy = "connectedServer", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Webhook> webhooks = new ArrayList<>();
-
-  public ConnectedServer(String name, String domain, String callbackUrl, String clientId, String clientSecret) {
+  public PendingConnection(String name, String domain, String callbackUrl) {
     super();
     this.name = name;
     this.domain = domain;
     this.callbackUrl = callbackUrl;
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
   }
 }

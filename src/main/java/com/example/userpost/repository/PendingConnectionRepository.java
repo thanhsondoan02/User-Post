@@ -1,0 +1,24 @@
+package com.example.userpost.repository;
+
+import com.example.userpost.constant.State;
+import com.example.userpost.model.group.Group;
+import com.example.userpost.model.openid.PendingConnection;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
+
+public interface PendingConnectionRepository extends JpaRepository<PendingConnection, String> {
+  @Query("SELECT COUNT(c) > 0 FROM PendingConnection c WHERE c.id = :id AND c.state = 1")
+  boolean existsAndActiveById(@Param("id") String id);
+
+  @Transactional
+  @Modifying
+  @Query("UPDATE PendingConnection c SET c.state = :state WHERE c.id = :id")
+  void updateState(@Param("id") String id, @Param("state") State state);
+
+  Optional<PendingConnection> findByIdAndState(String id, State state);
+}

@@ -1,7 +1,9 @@
 package com.example.userpost.model.user;
 
 import com.example.userpost.constant.Gender;
+import com.example.userpost.constant.Role;
 import com.example.userpost.model.base.BaseSqlEntity;
+import com.example.userpost.util.convert.RoleConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -37,6 +39,10 @@ public class User extends BaseSqlEntity {
   @Convert(converter = GenderConverter.class)
   private Gender gender;
 
+  @Column(name = "role", columnDefinition = "TINYINT")
+  @Convert(converter = RoleConverter.class)
+  private Role role;
+
   @Column(name = "date_of_birth")
   private Long dateOfBirth;
 
@@ -48,5 +54,6 @@ public class User extends BaseSqlEntity {
     this.fullName = fullName;
     this.gender = gender;
     this.dateOfBirth = dateOfBirth;
+    this.role = Role.USER;
   }
 }

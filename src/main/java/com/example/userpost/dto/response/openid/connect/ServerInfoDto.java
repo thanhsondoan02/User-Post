@@ -1,6 +1,6 @@
 package com.example.userpost.dto.response.openid.connect;
 
-import com.example.userpost.model.openid.ConnectedServer;
+import com.example.userpost.model.openid.AcceptedConnection;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +15,7 @@ public class ServerInfoDto {
   private String clientSecret;
   private Long createdAt;
 
-  public ServerInfoDto(ConnectedServer entity, String clientSecret) {
+  public ServerInfoDto(AcceptedConnection entity, String clientSecret) {
     this.id = entity.getId();
     this.name = entity.getName();
     this.domain = entity.getDomain();

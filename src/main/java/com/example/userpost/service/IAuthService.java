@@ -28,4 +28,6 @@ public interface IAuthService {
   boolean isTruePassword(String password);
 
   User getAuthUser();
+
+  boolean isAdmin();
 }
