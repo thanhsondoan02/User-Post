@@ -46,14 +46,14 @@ public class OpenIdService implements IOpenIdService {
   }
 
   @Override
-  public void addPendingConnections(ConnectRequestDto request) {
+  public ConnectionDto addPendingConnections(ConnectRequestDto request) {
     var newConnection = new PendingConnection(
       request.getName(),
       request.getDomain(),
       request.getCallbackUrl()
     );
 
-    pendingConnectionRepo.save(newConnection);
+    return new ConnectionDto(pendingConnectionRepo.save(newConnection));
   }
 
   @Override

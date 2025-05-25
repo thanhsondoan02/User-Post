@@ -3,8 +3,8 @@ package com.example.userpost.controller;
 import com.example.userpost.constant.ConnectionAction;
 import com.example.userpost.constant.ConnectionStatus;
 import com.example.userpost.constant.MessageConst;
-import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
+import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IOpenIdService;
 import com.example.userpost.util.ResponseBuilder;
@@ -37,8 +37,7 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
     }
 
-    openIdService.addPendingConnections(request);
-    return ResponseBuilder.success();
+    return ResponseBuilder.success(openIdService.addPendingConnections(request));
   }
 
   @GetMapping("/connections")
@@ -79,6 +78,9 @@ public class OpenIdController {
     }
 
     // call to server A
+
+
+
 
     return ResponseBuilder.success(openIdService.updateConnection(id, action));
   }

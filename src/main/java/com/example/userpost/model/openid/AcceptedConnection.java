@@ -1,6 +1,5 @@
 package com.example.userpost.model.openid;
 
-import com.example.userpost.model.base.BaseSqlEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +26,7 @@ public class AcceptedConnection extends BaseConnection {
 
   public AcceptedConnection(BaseConnection connection) {
     super();
+    this.id = connection.getId();
     this.name = connection.getName();
     this.domain = connection.getDomain();
     this.callbackUrl = connection.getCallbackUrl();
