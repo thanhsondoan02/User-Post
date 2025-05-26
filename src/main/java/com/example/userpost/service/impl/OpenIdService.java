@@ -66,7 +66,7 @@ public class OpenIdService implements IOpenIdService {
     switch (action) {
       case ACCEPT -> {
         var pendingConnection = pendingConnectionRepo.findByIdAndState(id, State.ACTIVE)
-          .orElseThrow(() -> new RuntimeException("Group not found"));
+          .orElseThrow(() -> new RuntimeException("Connection not found"));
 
         var newConnection = new AcceptedConnection(pendingConnection);
 
@@ -87,7 +87,7 @@ public class OpenIdService implements IOpenIdService {
       }
       case REJECT -> {
         pendingConnectionRepo.updateState(id, State.INACTIVE);
-        return null;
+        return new ConnectionDto(pendingConnectionRepo.findById(id).orElseThrow(() -> new RuntimeException("Connection not found")));
       }
       default -> throw new IllegalArgumentException("Invalid action: " + action);
     }

@@ -5,6 +5,7 @@ import com.example.userpost.constant.ConnectionStatus;
 import com.example.userpost.constant.MessageConst;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
+import com.example.userpost.service.IApiService;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IOpenIdService;
 import com.example.userpost.util.ResponseBuilder;
@@ -17,12 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class OpenIdController {
 
-  IAuthService authService;
-  IOpenIdService openIdService;
+  private final IAuthService authService;
+  private final IOpenIdService openIdService;
+  private final IApiService apiService;
 
-  public OpenIdController(IAuthService authService, IOpenIdService openIdService) {
+  public OpenIdController(IAuthService authService, IOpenIdService openIdService, IApiService apiService) {
     this.authService = authService;
     this.openIdService = openIdService;
+      this.apiService = apiService;
   }
 
   @PostMapping("/connections")
@@ -77,11 +80,16 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    // call to server A
+    // Update connection status in database
+    var response = openIdService.updateConnection(id, action);
 
+    // Call to server A to notify about the connection update
+    if (action == ConnectionAction.ACCEPT) {
+      request.setClientId(response.getClientId());
+      request.setClientSecret(response.getClientSecret());
+    }
+    apiService.updateConnection(response.getCallbackUrl(), request);
 
-
-
-    return ResponseBuilder.success(openIdService.updateConnection(id, action));
+    return ResponseBuilder.success(response);
   }
 }

@@ -20,11 +20,11 @@ public class ApiService implements IApiService {
   }
 
   @Override
-  public BaseResponseDto<ConnectionDto> updateConnection(String url, UpdateConnectionRequestDto body) {
+  public BaseResponseDto<?> updateConnection(String url, UpdateConnectionRequestDto body) {
     var request = new HttpEntity<>(body);
     var response = restTemplate.exchange(
       url, HttpMethod.POST, request,
-      new ParameterizedTypeReference<BaseResponseDto<ConnectionDto>>() {}
+      new ParameterizedTypeReference<BaseResponseDto<?>>() {}
     );
     return response.getBody();
   }

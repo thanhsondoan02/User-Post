@@ -6,5 +6,5 @@ import com.example.userpost.dto.response.base.BaseResponseDto;
 import com.example.userpost.dto.response.openid.connect.ConnectionDto;
 
 public interface IApiService {
-  BaseResponseDto<ConnectionDto> updateConnection(String url, UpdateConnectionRequestDto body);
+  BaseResponseDto<?> updateConnection(String url, UpdateConnectionRequestDto body);
 }
