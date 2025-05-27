@@ -1,11 +1,12 @@
 package com.example.userpost.service.impl;
 
 import com.example.userpost.constant.Gender;
-import com.example.userpost.constant.Role;
+import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
 import com.example.userpost.dto.response.auth.JwtResponseDto;
+import com.example.userpost.model.openid.AcceptedConnection;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import com.example.userpost.security.JwtUtils;
@@ -15,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -56,11 +56,23 @@ public class AuthService implements IAuthService {
 
   @Override
   public JwtResponseDto login(String username, String password) {
-    Authentication authentication = authenticationManager.authenticate(
+    var authentication = authenticationManager.authenticate(
       new UsernamePasswordAuthenticationToken(username, password));
 
+    var user = (User) authentication.getPrincipal();
+
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    String token = jwtUtils.generateToken((UserDetails) authentication.getPrincipal());
+    String token = jwtUtils.generateToken(username, password, user.getRole());
+    return new JwtResponseDto(token);
+  }
+
+  @Override
+  public JwtResponseDto loginOpenId(String clientId, String clientSecret) {
+    Authentication authentication = authenticationManager.authenticate(
+      new UsernamePasswordAuthenticationToken(clientId, clientSecret));
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    String token = jwtUtils.generateTokenOpenid(clientId, clientSecret);
     return new JwtResponseDto(token);
   }
 
@@ -114,12 +126,22 @@ public class AuthService implements IAuthService {
 
   @Override
   public User getAuthUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
     return (User) authentication.getPrincipal();
   }
 
   @Override
-  public boolean isAdmin() {
-    return getAuthUser().getRole() == Role.ADMIN;
+  public AcceptedConnection getAuthClient() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    return (AcceptedConnection) authentication.getPrincipal();
+  }
+
+  @Override
+  public SecurityRole getAuthRole() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    return authentication.getAuthorities().stream()
+      .findFirst()
+      .map(authority -> SecurityRole.fromString(authority.getAuthority()))
+      .orElseThrow(() -> new IllegalStateException("No role found in authentication context"));
   }
 }

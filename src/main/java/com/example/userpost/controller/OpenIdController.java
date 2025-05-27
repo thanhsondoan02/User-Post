@@ -25,7 +25,7 @@ public class OpenIdController {
   public OpenIdController(IAuthService authService, IOpenIdService openIdService, IApiService apiService) {
     this.authService = authService;
     this.openIdService = openIdService;
-      this.apiService = apiService;
+    this.apiService = apiService;
   }
 
   @PostMapping("/connections")
@@ -45,10 +45,6 @@ public class OpenIdController {
 
   @GetMapping("/connections")
   public ResponseEntity<?> getConnections(@RequestParam(required = false) String status) {
-    if (!authService.isAdmin()) {
-      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
-    }
-
     ConnectionStatus connectionStatus;
     if (status != null) {
       try {
@@ -65,10 +61,6 @@ public class OpenIdController {
 
   @PostMapping("/connections/{id}")
   public ResponseEntity<?> updateConnection(@PathVariable("id") String id, @RequestBody UpdateConnectionRequestDto request) {
-    if (!authService.isAdmin()) {
-      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
-    }
-
     ConnectionAction action;
     try {
       action = ConnectionAction.fromString(request.getAction());

@@ -8,7 +8,10 @@ import com.example.userpost.dto.response.openid.connect.ConnectionListResponseDt
 
 public interface IOpenIdService {
   ConnectionDto addPendingConnections(ConnectRequestDto request);
+
   boolean isConnectionExistAndPending(String id);
+
   ConnectionDto updateConnection(String id, ConnectionAction action);
+
   ConnectionListResponseDto getConnections(ConnectionStatus status);
 }

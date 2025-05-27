@@ -26,4 +26,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
   @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.id = :id AND u.state = 1")
   boolean existsAndActiveById(@Param("id") String id);
+
+  @Query("SELECT v FROM User v WHERE v.username = :username AND v.state = 1")
+  Optional<User> findActiveByUserName(@Param("username") String username);
 }

@@ -1,18 +1,21 @@
 package com.example.userpost.security;
 
+import com.example.userpost.constant.SecurityRole;
+import com.example.userpost.security.auth_provider.ClientCredentialsAuthProvider;
+import com.example.userpost.security.auth_provider.UsernamePasswordAuthProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -20,24 +23,48 @@ public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+  private final UsernamePasswordAuthProvider usernamePasswordAuthProvider;
+  private final ClientCredentialsAuthProvider clientCredentialsAuthProvider;
 
-  public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
+  public SecurityConfig(
+    JwtAuthenticationFilter jwtAuthenticationFilter,
+    CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+    UsernamePasswordAuthProvider usernamePasswordAuthProvider,
+    ClientCredentialsAuthProvider clientCredentialsAuthProvider
+  ) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+    this.usernamePasswordAuthProvider = usernamePasswordAuthProvider;
+    this.clientCredentialsAuthProvider = clientCredentialsAuthProvider;
   }
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    var userRole = SecurityRole.USER.toString();
+    var adminRole = SecurityRole.USER_ADMIN.toString();
+    var clientRole = SecurityRole.CLIENT.toString();
+
     http
       .csrf(AbstractHttpConfigurer::disable)
-      .exceptionHandling( e ->
+      .exceptionHandling(e ->
         e.authenticationEntryPoint(customAuthenticationEntryPoint)
       )
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-        .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
-        .requestMatchers(HttpMethod.POST, "/api/connections").permitAll()
-        .anyRequest().authenticated()
+
+
+        // Public endpoints
+        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/login-openid").permitAll()
+        .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // Search posts
+        .requestMatchers(HttpMethod.POST, "/api/connections").permitAll() // Create a new connection
+
+        // Admin-only endpoints
+        .requestMatchers(HttpMethod.GET, "/api/connections").hasRole(adminRole) // View connections
+        .requestMatchers("/api/connections/{id}").hasRole(adminRole) // Update a connection
+
+        // Client-only endpoints
+
+        // Other requests: required user or admin role
+        .anyRequest().hasAnyRole(userRole, adminRole)
       )
       .sessionManagement(session -> session
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -49,13 +76,11 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-    return authConfig.getAuthenticationManager();
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+  public AuthenticationManager authenticationManager() {
+    return new ProviderManager(Arrays.asList(
+      usernamePasswordAuthProvider,
+      clientCredentialsAuthProvider
+    ));
   }
 }
 

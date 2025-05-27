@@ -4,6 +4,7 @@ import com.example.userpost.constant.MessageConst;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
+import com.example.userpost.dto.request.openid.auth.OpenIdLoginRequestDto;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IUserService;
 import com.example.userpost.util.ResponseBuilder;
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-  IAuthService authService;
-  IUserService userService;
+  private final IAuthService authService;
+  private final IUserService userService;
 
   public AuthController(IAuthService authService, IUserService userService) {
     this.authService = authService;
@@ -55,6 +56,22 @@ public class AuthController {
           return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), MessageConst.INVALID_EMAIL_OR_PASSWORD);
         }
       }
+    }
+  }
+
+  @PostMapping("/login-openid")
+  public ResponseEntity<?> loginOpenId(@RequestBody OpenIdLoginRequestDto request) {
+    var clientId = request.getClientId();
+    var clientSecret = request.getClientSecret();
+
+    if (clientId == null || clientSecret == null) {
+      return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.MISSING_REQUIRED_FIELD);
+    }
+
+    try {
+      return ResponseBuilder.success(authService.loginOpenId(clientId, clientSecret));
+    } catch (BadCredentialsException e) {
+      return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), MessageConst.INVALID_CLIENT_ID_OR_CLIENT_SECRET);
     }
   }
 
