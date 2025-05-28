@@ -1,7 +1,6 @@
 package com.example.userpost.dto.response.group;
 
 import com.example.userpost.model.group.Group;
-import com.example.userpost.model.group.GroupUser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,19 +14,12 @@ public class GroupResponseDto {
   private String thumbnail;
   private List<GroupUserResponseDto> users;
 
-  public GroupResponseDto(Group group) {
+  public GroupResponseDto(Group group, boolean includeUserDetails) {
     this.id = group.getId();
     this.name = group.getName();
     this.thumbnail = group.getThumbnail();
-    this.users = null;
-  }
-
-  public GroupResponseDto(String id, String name, String thumbnail, List<GroupUser> users) {
-    this.id = id;
-    this.name = name;
-    this.thumbnail = thumbnail;
-    this.users = users.stream()
-      .map(GroupUserResponseDto::new)
+    this.users = group.getGroupUsers().stream()
+      .map(v -> new GroupUserResponseDto(v, includeUserDetails))
       .toList();
   }
 }

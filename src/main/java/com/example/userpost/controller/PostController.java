@@ -1,6 +1,7 @@
 package com.example.userpost.controller;
 
 import com.example.userpost.constant.MessageConst;
+import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.post.CreatePostRequestDto;
 import com.example.userpost.dto.request.post.UpdatePostRequestDto;
 import com.example.userpost.dto.response.post.PostListResponseDto;
@@ -43,20 +44,26 @@ public class PostController {
 
   @GetMapping
   public ResponseEntity<?> searchPost(@RequestParam(required = false) String title, @RequestParam(required = false) String userId) {
-    List<Post> posts;
-    if (title == null && userId == null) {
-      posts = postService.getAll();
-    } else if (title == null) {
-      if (!userService.isUserIdExist(userId)) {
-        return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.USER_NOT_FOUND);
-      }
-      posts = postService.searchPostByUser(userId);
-    } else if (userId == null) {
-      posts = postService.searchPostByTitle(title);
+    if (authService.getAuthRole() == SecurityRole.CLIENT) {
+      return ResponseBuilder.success(new PostListResponseDto(postService.getAll()));
     } else {
-      posts = postService.searchPostByTitleAndUser(title, userId);
+      List<Post> posts;
+      if (title == null && userId == null) {
+        posts = postService.getAll();
+      } else if (userId == null) { // titleId != null
+        posts = postService.searchPostByTitle(title);
+      } else { // userId != null
+        if (!userService.isUserIdExist(userId)) {
+          return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.USER_NOT_FOUND);
+        }
+        if (title == null) {
+          posts = postService.searchPostByUser(userId);
+        } else {
+          posts = postService.searchPostByTitleAndUser(title, userId);
+        }
+      }
+      return ResponseBuilder.success(new PostListResponseDto(posts));
     }
-    return ResponseBuilder.success(new PostListResponseDto(posts));
   }
 
   @PutMapping("/{id}")

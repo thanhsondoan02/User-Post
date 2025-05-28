@@ -141,7 +141,14 @@ public class AuthService implements IAuthService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     return authentication.getAuthorities().stream()
       .findFirst()
-      .map(authority -> SecurityRole.fromString(authority.getAuthority()))
+      .map(authority -> {
+        var authorityName = authority.getAuthority();
+        if (authorityName.startsWith("ROLE_")) {
+          return SecurityRole.fromString(authorityName.substring(5));
+        } else {
+          throw new IllegalStateException("Authority does not start with 'ROLE_' prefix: " + authorityName);
+        }
+      })
       .orElseThrow(() -> new IllegalStateException("No role found in authentication context"));
   }
 }

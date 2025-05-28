@@ -2,9 +2,11 @@ package com.example.userpost.controller;
 
 import com.example.userpost.constant.GroupRole;
 import com.example.userpost.constant.MessageConst;
+import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.group.CreateGroupRequestDto;
 import com.example.userpost.dto.request.group.GroupUserRequestDto;
 import com.example.userpost.dto.request.group.UpdateGroupRequestDto;
+import com.example.userpost.dto.response.group.GroupListResponseDto;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IGroupService;
 import com.example.userpost.service.IUserService;
@@ -140,9 +142,14 @@ public class GroupController {
 
   @GetMapping()
   public ResponseEntity<?> getGroupList() {
-    var userId = authService.getAuthUser().getId();
-    var groups = groupService.getGroupList(userId);
-    return ResponseBuilder.success(groups);
+    if (authService.getAuthRole() == SecurityRole.CLIENT) {
+      var groups = groupService.getAll();
+      return ResponseBuilder.success(new GroupListResponseDto(groups, false));
+    } else {
+      var userId = authService.getAuthUser().getId();
+      var groups = groupService.getGroupList(userId);
+      return ResponseBuilder.success(new GroupListResponseDto(groups, false));
+    }
   }
 
   @GetMapping("/{groupId}")

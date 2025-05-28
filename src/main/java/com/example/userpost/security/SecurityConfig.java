@@ -54,14 +54,16 @@ public class SecurityConfig {
 
         // Public endpoints
         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/login-openid").permitAll()
-        .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // Search posts
         .requestMatchers(HttpMethod.POST, "/api/connections").permitAll() // Create a new connection
 
         // Admin-only endpoints
         .requestMatchers(HttpMethod.GET, "/api/connections").hasRole(adminRole) // View connections
         .requestMatchers("/api/connections/{id}").hasRole(adminRole) // Update a connection
 
-        // Client-only endpoints
+        // Client or user endpoints
+        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole(userRole, adminRole, clientRole)
+        .requestMatchers(HttpMethod.GET, "/api/posts").hasAnyRole(userRole, adminRole, clientRole)
+        .requestMatchers(HttpMethod.GET, "/api/groups").hasAnyRole(userRole, adminRole, clientRole)
 
         // Other requests: required user or admin role
         .anyRequest().hasAnyRole(userRole, adminRole)

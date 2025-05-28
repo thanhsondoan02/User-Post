@@ -4,7 +4,6 @@ import com.example.userpost.constant.State;
 import com.example.userpost.dto.request.group.CreateGroupRequestDto;
 import com.example.userpost.dto.request.group.GroupUserRequestDto;
 import com.example.userpost.dto.request.group.UpdateGroupRequestDto;
-import com.example.userpost.dto.response.group.GroupListResponseDto;
 import com.example.userpost.dto.response.group.GroupResponseDto;
 import com.example.userpost.model.group.Group;
 import com.example.userpost.model.group.GroupUser;
@@ -15,6 +14,7 @@ import com.example.userpost.service.IGroupService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class GroupService implements IGroupService {
@@ -41,12 +41,7 @@ public class GroupService implements IGroupService {
 
     Group savedGroup = groupRepository.save(group);
 
-    return new GroupResponseDto(
-      savedGroup.getId(),
-      savedGroup.getName(),
-      savedGroup.getThumbnail(),
-      savedGroup.getGroupUsers()
-    );
+    return new GroupResponseDto(savedGroup, true);
   }
 
   @Override
@@ -121,20 +116,19 @@ public class GroupService implements IGroupService {
   }
 
   @Override
-  public GroupListResponseDto getGroupList(String userId) {
-    var groups = groupRepository.findActiveGroupsOfUser(userId);
-    return new GroupListResponseDto(groups);
+  public List<Group> getGroupList(String userId) {
+    return groupRepository.findActiveGroupsOfUser(userId);
+  }
+
+  @Override
+  public List<Group> getAll() {
+    return groupRepository.getActiveGroups();
   }
 
   @Override
   public GroupResponseDto getGroupInfo(String groupId) {
     Group group = groupRepository.findActiveById(groupId)
       .orElseThrow(() -> new RuntimeException("Group not found"));
-    return new GroupResponseDto(
-      group.getId(),
-      group.getName(),
-      group.getThumbnail(),
-      groupRepository.getActiveUsersInGroup(groupId)
-    );
+    return new GroupResponseDto(group, true);
   }
 }
