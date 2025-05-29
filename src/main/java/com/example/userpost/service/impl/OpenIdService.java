@@ -166,20 +166,20 @@ public class OpenIdService implements IOpenIdService {
 
   @Override
   public WebhookResponseDto createWebhook(RegisterWebhookRequestDto request, EventScope eventScope) {
-    return null;
-//    var webhook = new Webhook();
-//
-//    webhook.setScopeValue(request.getScopeValue());
-//    webhook.setRedirectUrl(request.getRedirectUrl());
-//
-//    var connection = authService.getAuthClient();
-//    webhook.setConnection(connection);
-//
-//    webhook.setEvent(eventScope.getEvent());
-//    webhook.setScope(eventScope.getScope());
-//
-//    var save = webhookRepository.save(webhook);
-//    return new WebhookResponseDto(save);
+    var webhook = new Webhook();
+    webhook.setRedirectUrl(request.getRedirectUrl());
+    webhook.setEventScope(eventScope);
+
+    var connection = authService.getAuthClient();
+    webhook.setConnection(connection);
+
+    var save = webhookRepository.save(webhook);
+    return new WebhookResponseDto(save);
+  }
+
+  @Override
+  public List<Webhook> getWebhooksByConnectionId(String connectionId) {
+    return webhookRepository.findByConnectionId(connectionId);
   }
 
   @Override

@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RegisterWebhookRequestDto {
-  private String event;
-  private String scope;
+  private Integer scope;
+  private Integer event;
   private String redirectUrl;
 }

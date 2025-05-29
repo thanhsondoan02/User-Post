@@ -12,9 +12,9 @@ import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
 import com.example.userpost.dto.response.openid.webhook.WebhookResponseDto;
-import com.example.userpost.model.openid.Event;
 import com.example.userpost.model.openid.EventScope;
 import com.example.userpost.model.openid.Scope;
+import com.example.userpost.model.openid.Webhook;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +37,8 @@ public interface IOpenIdService {
   List<Scope> getAllScopeEvents();
 
   WebhookResponseDto createWebhook(RegisterWebhookRequestDto request, EventScope eventScope);
+
+  List<Webhook> getWebhooksByConnectionId(String connectionId);
 
   Optional<EventScope> getEventScope(HookEvent event, HookScope scope);
 }
