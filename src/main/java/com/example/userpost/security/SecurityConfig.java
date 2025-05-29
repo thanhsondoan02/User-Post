@@ -50,15 +50,22 @@ public class SecurityConfig {
         e.authenticationEntryPoint(customAuthenticationEntryPoint)
       )
       .authorizeHttpRequests(auth -> auth
-
-
         // Public endpoints
         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/login-openid").permitAll()
         .requestMatchers(HttpMethod.POST, "/api/connections").permitAll() // Create a new connection
 
         // Admin-only endpoints
         .requestMatchers(HttpMethod.GET, "/api/connections").hasRole(adminRole) // View connections
-        .requestMatchers("/api/connections/{id}").hasRole(adminRole) // Update a connection
+        .requestMatchers("/api/connections/{id}").hasRole(adminRole) // Accept or reject connection
+        .requestMatchers(HttpMethod.POST, "/api/scopes").hasRole(adminRole) // Create a new scope
+        .requestMatchers(HttpMethod.POST, "/api/events").hasRole(adminRole) // Create a new event
+        .requestMatchers(HttpMethod.POST, "/api/event_scopes").hasRole(adminRole) // Map scopes to events
+
+        // Client or admin endpoints
+        .requestMatchers(HttpMethod.GET, "/api/events").hasAnyRole(clientRole, adminRole) // View all events
+
+        // Client-only endpoints
+        .requestMatchers("/api/webhooks").hasRole(clientRole)
 
         // Client or user endpoints
         .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole(userRole, adminRole, clientRole)

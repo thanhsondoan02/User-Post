@@ -3,23 +3,14 @@ package com.example.userpost.constant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 @AllArgsConstructor
 public enum HookEvent {
-  USER_CREATED(0),
-  USER_UPDATED(1),
-  USER_DELETED(2),
-
-  GROUP_CREATED(3),
-  GROUP_UPDATED(4),
-  GROUP_DELETED(5),
-
-  GROUP_USER_ADDED(6),
-  GROUP_USER_REMOVED(7),
-
-  POST_CREATED(8),
-  POST_UPDATED(9),
-  POST_DELETED(10);
+  CREATE(0),
+  UPDATE(1),
+  DELETE(2);
 
   private final int code;
 
@@ -28,5 +19,12 @@ public enum HookEvent {
       if (v.code == code) return v;
     }
     throw new IllegalArgumentException("Invalid code: " + code);
+  }
+
+  public static HookEvent fromString(String event) {
+    for (HookEvent v : values()) {
+      if (v.toString().equalsIgnoreCase(event)) return v;
+    }
+    throw new IllegalArgumentException("Invalid event: " + event);
   }
 }
