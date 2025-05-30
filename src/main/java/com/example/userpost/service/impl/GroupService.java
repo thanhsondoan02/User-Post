@@ -117,7 +117,9 @@ public class GroupService implements IGroupService {
 
   @Override
   public List<Group> getGroupList(String userId) {
-    return groupRepository.findActiveGroupsOfUser(userId);
+    var groups = groupRepository.findActiveGroupsOfUser(userId);
+    groups.forEach(v -> v.setGroupUsers(groupRepository.getActiveUsersInGroup(v.getId())));
+    return groups;
   }
 
   @Override
@@ -127,8 +129,9 @@ public class GroupService implements IGroupService {
 
   @Override
   public GroupResponseDto getGroupInfo(String groupId) {
-    Group group = groupRepository.findActiveById(groupId)
+    var group = groupRepository.findActiveById(groupId)
       .orElseThrow(() -> new RuntimeException("Group not found"));
+    group.setGroupUsers(groupRepository.getActiveUsersInGroup(groupId));
     return new GroupResponseDto(group, true);
   }
 }

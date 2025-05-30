@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IOpenIdService {
+  boolean isConnectionWithDomainExist(String domain);
+
   ConnectionDto addPendingConnections(ConnectRequestDto request);
 
   boolean isConnectionExistAndPending(String id);

@@ -44,6 +44,10 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
     }
 
+    if (openIdService.isConnectionWithDomainExist(domain)) {
+      return ResponseBuilder.error(HttpStatus.CONFLICT.value(), MessageConst.CONNECTION_EXISTS);
+    }
+
     return ResponseBuilder.success(openIdService.addPendingConnections(request));
   }
 

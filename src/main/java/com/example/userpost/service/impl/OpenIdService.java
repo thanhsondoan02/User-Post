@@ -51,7 +51,23 @@ public class OpenIdService implements IOpenIdService {
   }
 
   @Override
+  public boolean isConnectionWithDomainExist(String domain) {
+    return pendingConnectionRepo.existsByDomainAndState(domain, State.ACTIVE) ||
+           acceptedConnectionRepo.existsByDomainAndState(domain, State.ACTIVE);
+  }
+
+  @Override
   public ConnectionDto addPendingConnections(ConnectRequestDto request) {
+    var connection = pendingConnectionRepo.getByDomain(request.getDomain());
+
+    if (connection.isPresent()) {
+      if (connection.get().getState() == State.ACTIVE) {
+        throw new RuntimeException("Connection with this domain already exists and is pending.");
+      } else {
+        pendingConnectionRepo.delete(connection.get());
+      }
+    }
+
     var newConnection = new PendingConnection(
       request.getName(),
       request.getDomain(),

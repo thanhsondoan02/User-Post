@@ -24,4 +24,8 @@ public interface PendingConnectionRepository extends JpaRepository<PendingConnec
   Optional<PendingConnection> findByIdAndState(String id, State state);
 
   List<PendingConnection> findAllByState(@NotNull State state);
+
+  boolean existsByDomainAndState(String domain, State state);
+
+  Optional<PendingConnection> getByDomain(String domain);
 }

@@ -18,7 +18,7 @@ public class BaseConnection extends BaseSqlEntity {
   @Column(name = "name", length = 100, nullable = false)
   protected String name;
 
-  @Column(name = "domain", nullable = false)
+  @Column(name = "domain", nullable = false, unique = true)
   protected String domain;
 
   @Column(name = "callback_url", nullable = false)

@@ -19,4 +19,6 @@ public interface AcceptedConnectionRepository extends JpaRepository<AcceptedConn
 
   @Query("SELECT v FROM AcceptedConnection v WHERE v.id = :id AND v.state = 1")
   Optional<AcceptedConnection> findActiveById(@Param("id") String id);
+
+  boolean existsByDomainAndState(String domain, State state);
 }
