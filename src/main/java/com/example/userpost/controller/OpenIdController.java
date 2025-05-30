@@ -4,9 +4,9 @@ import com.example.userpost.constant.*;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.example.userpost.dto.request.openid.webhook.RegisterWebhookRequestDto;
-import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
+import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.webhook.WebhookListResponseDto;
 import com.example.userpost.model.openid.EventScope;
 import com.example.userpost.service.IApiService;
@@ -137,5 +137,21 @@ public class OpenIdController {
     var connection = authService.getAuthClient();
     var webhooks = openIdService.getWebhooksByConnectionId(connection.getId());
     return ResponseBuilder.success(new WebhookListResponseDto(webhooks));
+  }
+
+  @DeleteMapping("/webhooks/{id}")
+  public ResponseEntity<?> deleteWebhook(@PathVariable String id) {
+    var webhook = openIdService.getWebhookById(id).orElse(null);
+    if (webhook == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.WEBHOOK_NOT_FOUND);
+    }
+
+    var connection = authService.getAuthClient();
+    if (!webhook.getConnection().getId().equals(connection.getId())) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+
+    openIdService.deleteWebhook(id);
+    return ResponseBuilder.success();
   }
 }

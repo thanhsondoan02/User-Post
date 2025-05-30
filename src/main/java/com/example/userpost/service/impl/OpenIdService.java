@@ -5,9 +5,9 @@ import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.webhook.RegisterWebhookRequestDto;
 import com.example.userpost.dto.response.openid.connect.ConnectionDto;
 import com.example.userpost.dto.response.openid.connect.ConnectionListResponseDto;
-import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
+import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.webhook.WebhookResponseDto;
 import com.example.userpost.model.openid.*;
 import com.example.userpost.repository.*;
@@ -166,11 +166,14 @@ public class OpenIdService implements IOpenIdService {
 
   @Override
   public WebhookResponseDto createWebhook(RegisterWebhookRequestDto request, EventScope eventScope) {
+    var connection = authService.getAuthClient();
+
+    // Check if this connection is register this type of event and scope before and delete it if exists
+    webhookRepository.findInactive(eventScope, connection).ifPresent(webhookRepository::delete);
+
     var webhook = new Webhook();
     webhook.setRedirectUrl(request.getRedirectUrl());
     webhook.setEventScope(eventScope);
-
-    var connection = authService.getAuthClient();
     webhook.setConnection(connection);
 
     var save = webhookRepository.save(webhook);
@@ -178,8 +181,21 @@ public class OpenIdService implements IOpenIdService {
   }
 
   @Override
+  public Optional<Webhook> getWebhookById(String id) {
+    return webhookRepository.findActiveById(id);
+  }
+
+  @Override
   public List<Webhook> getWebhooksByConnectionId(String connectionId) {
     return webhookRepository.findByConnectionId(connectionId);
+  }
+
+  @Override
+  public void deleteWebhook(String id) {
+    var webhook = webhookRepository.findActiveById(id)
+        .orElseThrow(() -> new RuntimeException("Webhook not found: " + id));
+    webhook.setState(State.INACTIVE);
+    webhookRepository.save(webhook);
   }
 
   @Override

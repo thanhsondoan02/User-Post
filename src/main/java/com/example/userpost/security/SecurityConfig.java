@@ -66,6 +66,7 @@ public class SecurityConfig {
 
         // Client-only endpoints
         .requestMatchers("/api/webhooks").hasRole(clientRole)
+        .requestMatchers("/api/webhooks/{id}").hasRole(clientRole)
 
         // Client or user endpoints
         .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole(userRole, adminRole, clientRole)

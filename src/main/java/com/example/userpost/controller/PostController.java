@@ -1,11 +1,14 @@
 package com.example.userpost.controller;
 
+import com.example.userpost.constant.HookEvent;
 import com.example.userpost.constant.MessageConst;
 import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.post.CreatePostRequestDto;
 import com.example.userpost.dto.request.post.UpdatePostRequestDto;
 import com.example.userpost.dto.response.post.PostListResponseDto;
+import com.example.userpost.dto.response.post.PostResponseDto;
 import com.example.userpost.model.post.Post;
+import com.example.userpost.service.IApiService;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IPostService;
 import com.example.userpost.service.IUserService;
@@ -23,11 +26,13 @@ public class PostController {
   private final IPostService postService;
   private final IAuthService authService;
   private final IUserService userService;
+  private final IApiService apiService;
 
-  public PostController(IPostService postService, IAuthService authService, IUserService userService) {
+  public PostController(IPostService postService, IAuthService authService, IUserService userService, IApiService apiService) {
     this.postService = postService;
     this.authService = authService;
     this.userService = userService;
+    this.apiService = apiService;
   }
 
   @PostMapping
@@ -38,6 +43,10 @@ public class PostController {
       return ResponseBuilder.error(HttpStatus.UNPROCESSABLE_ENTITY.value(), MessageConst.INVALID_INPUT_FORMAT);
     } else {
       var res = postService.createPost(request.getTitle(), request.getContent());
+
+      // Send webhooks
+      apiService.sendWebhookScopePosts(HookEvent.CREATE, res);
+
       return ResponseBuilder.build(HttpStatus.CREATED.value(), MessageConst.POST_CREATED_SUCCESSFULLY, res);
     }
   }
@@ -80,6 +89,10 @@ public class PostController {
         return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
       } else {
         var result = postService.updatePost(id, request.getTitle(), request.getContent());
+
+        // Send webhooks
+        apiService.sendWebhookScopePosts(HookEvent.UPDATE, result);
+
         return ResponseBuilder.build(HttpStatus.OK.value(), MessageConst.POST_UPDATED_SUCCESSFULLY, result);
       }
     }
@@ -94,6 +107,12 @@ public class PostController {
       return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
     } else {
       postService.deletePost(id);
+
+      // Send webhooks
+      var dto = new PostResponseDto();
+      dto.setId(id);
+      apiService.sendWebhookScopePosts(HookEvent.DELETE, dto);
+
       return ResponseBuilder.build(HttpStatus.OK.value(), MessageConst.POST_DELETED_SUCCESSFULLY, null);
     }
   }

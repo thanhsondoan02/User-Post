@@ -1,10 +1,13 @@
 package com.example.userpost.controller;
 
+import com.example.userpost.constant.HookEvent;
 import com.example.userpost.constant.MessageConst;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
 import com.example.userpost.dto.request.openid.auth.OpenIdLoginRequestDto;
+import com.example.userpost.dto.response.user.UserResponseDto;
+import com.example.userpost.service.IApiService;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IUserService;
 import com.example.userpost.util.ResponseBuilder;
@@ -19,10 +22,12 @@ public class AuthController {
 
   private final IAuthService authService;
   private final IUserService userService;
+  private final IApiService apiService;
 
-  public AuthController(IAuthService authService, IUserService userService) {
+  public AuthController(IAuthService authService, IUserService userService, IApiService apiService) {
     this.authService = authService;
     this.userService = userService;
+    this.apiService = apiService;
   }
 
   @PostMapping("/register")
@@ -34,7 +39,9 @@ public class AuthController {
     } else if (userService.isUsernameExist(request.getUsername()) || userService.isEmailExist(request.getEmail())) {
       return ResponseBuilder.error(HttpStatus.CONFLICT.value(), MessageConst.EMAIL_OR_USERNAME_EXISTS);
     } else {
-      return ResponseBuilder.build(HttpStatus.CREATED.value(), MessageConst.REGISTER_SUCCESS, authService.register(request));
+      var res = authService.register(request);
+      apiService.sendWebhookScopeUsers(HookEvent.CREATE, new UserResponseDto(authService.getAuthUser()));
+      return ResponseBuilder.build(HttpStatus.CREATED.value(), MessageConst.REGISTER_SUCCESS, res);
     }
   }
 

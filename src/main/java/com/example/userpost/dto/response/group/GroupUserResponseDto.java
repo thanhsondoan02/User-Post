@@ -3,11 +3,13 @@ package com.example.userpost.dto.response.group;
 import com.example.userpost.model.group.GroupUser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class GroupUserResponseDto {
   private String id;
   private String userId;

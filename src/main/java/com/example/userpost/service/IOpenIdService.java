@@ -8,9 +8,9 @@ import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.webhook.RegisterWebhookRequestDto;
 import com.example.userpost.dto.response.openid.connect.ConnectionDto;
 import com.example.userpost.dto.response.openid.connect.ConnectionListResponseDto;
-import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
+import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.webhook.WebhookResponseDto;
 import com.example.userpost.model.openid.EventScope;
 import com.example.userpost.model.openid.Scope;
@@ -38,7 +38,11 @@ public interface IOpenIdService {
 
   WebhookResponseDto createWebhook(RegisterWebhookRequestDto request, EventScope eventScope);
 
+  Optional<Webhook> getWebhookById(String id);
+
   List<Webhook> getWebhooksByConnectionId(String connectionId);
+
+  void deleteWebhook(String id);
 
   Optional<EventScope> getEventScope(HookEvent event, HookScope scope);
 }

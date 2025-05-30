@@ -2,12 +2,14 @@ package com.example.userpost.dto.response.group;
 
 import com.example.userpost.model.group.Group;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class GroupResponseDto {
   private String id;
   private String name;

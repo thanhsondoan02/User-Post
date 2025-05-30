@@ -11,20 +11,27 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class WebhookResponseDto {
+  private String id;
   private ScopeDto scope;
   private EventDto event;
   private String redirectUrl;
 
   public WebhookResponseDto(Webhook webhook) {
-    event = new EventDto();
+    id = webhook.getId();
+    redirectUrl = webhook.getRedirectUrl();
 
     var eventScope = webhook.getEventScope();
-    event.setName(eventScope.getEvent().getName());
 
+    var eventEntity = eventScope.getEvent();
+    event = new EventDto();
+    event.setCode(eventEntity.getType().getCode());
+    event.setName(eventEntity.getName());
+
+    var scopeEntity = eventScope.getScope();
     scope = new ScopeDto();
-    scope.setName(eventScope.getScope().getName());
+    scope.setCode(scopeEntity.getType().getCode());
+    scope.setName(scopeEntity.getName());
 
-    redirectUrl = webhook.getRedirectUrl();
   }
 }
 
