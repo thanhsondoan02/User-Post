@@ -37,6 +37,9 @@ public interface GroupRepository extends JpaRepository<Group, String> {
     """)
   List<GroupUser> getActiveUsersInGroup(@Param("groupId") String groupId);
 
+  @Query("SELECT g FROM Group g JOIN g.groupUsers gu WHERE g.state = 1")
+  List<Group> getActiveGroups();
+
   @Query("SELECT g FROM Group g JOIN g.groupUsers gu WHERE gu.user.id = :userId AND gu.state = 1 AND g.state = 1")
   List<Group> findActiveGroupsOfUser(@Param("userId") String userId);
 

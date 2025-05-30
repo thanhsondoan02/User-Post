@@ -6,9 +6,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum HookScope {
-  READ_USER(0),
-  READ_GROUP(1),
-  READ_POST(2);
+  USERS(0),
+  POSTS(1),
+  GROUPS(2),
+  GROUP_MEMBERS(3);
 
   private final int code;
 
@@ -17,5 +18,12 @@ public enum HookScope {
       if (v.code == code) return v;
     }
     throw new IllegalArgumentException("Invalid code: " + code);
+  }
+
+  public static HookScope fromString(String scope) {
+    for (HookScope v : values()) {
+      if (v.toString().equalsIgnoreCase(scope)) return v;
+    }
+    throw new IllegalArgumentException("Invalid scope: " + scope);
   }
 }

@@ -2,10 +2,12 @@ package com.example.userpost.dto.response.post;
 
 import com.example.userpost.model.post.Post;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class PostResponseDto {
   private String id;
   private String title;

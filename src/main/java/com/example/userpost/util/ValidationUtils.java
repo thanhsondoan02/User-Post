@@ -85,7 +85,7 @@ public class ValidationUtils {
     }
   }
 
-  public static boolean isValidCallbackUrl(String domain, String callbackUrl) {
+  public static boolean isSameHost(String domain, String callbackUrl) {
     if (domain == null || callbackUrl == null) return false;
     try {
       URL domainUrl = new URL(domain);

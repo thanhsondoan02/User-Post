@@ -34,6 +34,10 @@ public final class MessageConst {
 
   // Webhook
   public static final String CONNECTION_NOT_FOUND = "Connection not found";
+  public static final String INVALID_CLIENT_ID_OR_CLIENT_SECRET = "Invalid clientId or clientSecret";
+  public static final String INVALID_REDIRECT_URL = "Invalid redirect url";
+  public static final String INVALID_EVENT_OR_SCOPE = "Invalid event or scope";
+  public static final String WEBHOOK_NOT_FOUND = "Webhook not found";
 
   private MessageConst() {
   }

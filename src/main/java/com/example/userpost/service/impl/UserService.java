@@ -1,7 +1,6 @@
 package com.example.userpost.service.impl;
 
 import com.example.userpost.constant.State;
-import com.example.userpost.dto.response.user.UserListResponseDto;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import com.example.userpost.service.IUserService;
@@ -18,14 +17,13 @@ public class UserService implements IUserService {
   }
 
   @Override
-  public UserListResponseDto getAllUsers() {
-    return new UserListResponseDto(userRepository.findAllByState(State.ACTIVE));
+  public List<User> getAllUsers() {
+    return userRepository.getActiveUsers();
   }
 
   @Override
-  public UserListResponseDto searchUsers(String key) {
-    List<User> users = userRepository.searchByKeyword(key);
-    return new UserListResponseDto(users);
+  public List<User> searchUsers(String key) {
+    return userRepository.searchByKeyword(key);
   }
 
   @Override

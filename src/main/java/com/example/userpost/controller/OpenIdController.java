@@ -1,10 +1,14 @@
 package com.example.userpost.controller;
 
-import com.example.userpost.constant.ConnectionAction;
-import com.example.userpost.constant.ConnectionStatus;
-import com.example.userpost.constant.MessageConst;
+import com.example.userpost.constant.*;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
+import com.example.userpost.dto.request.openid.webhook.RegisterWebhookRequestDto;
+import com.example.userpost.dto.response.openid.event.EventDto;
+import com.example.userpost.dto.response.openid.event.ScopeDto;
+import com.example.userpost.dto.response.openid.event.ScopeListDto;
+import com.example.userpost.dto.response.openid.webhook.WebhookListResponseDto;
+import com.example.userpost.model.openid.EventScope;
 import com.example.userpost.service.IApiService;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IOpenIdService;
@@ -25,7 +29,7 @@ public class OpenIdController {
   public OpenIdController(IAuthService authService, IOpenIdService openIdService, IApiService apiService) {
     this.authService = authService;
     this.openIdService = openIdService;
-      this.apiService = apiService;
+    this.apiService = apiService;
   }
 
   @PostMapping("/connections")
@@ -36,7 +40,7 @@ public class OpenIdController {
 
     if (name == null || name.isBlank()
       || !ValidationUtils.isValidDomain(domain)
-      || !ValidationUtils.isValidCallbackUrl(domain, callbackUrl)) {
+      || !ValidationUtils.isSameHost(domain, callbackUrl)) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
     }
 
@@ -45,10 +49,6 @@ public class OpenIdController {
 
   @GetMapping("/connections")
   public ResponseEntity<?> getConnections(@RequestParam(required = false) String status) {
-    if (!authService.isAdmin()) {
-      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
-    }
-
     ConnectionStatus connectionStatus;
     if (status != null) {
       try {
@@ -65,10 +65,6 @@ public class OpenIdController {
 
   @PostMapping("/connections/{id}")
   public ResponseEntity<?> updateConnection(@PathVariable("id") String id, @RequestBody UpdateConnectionRequestDto request) {
-    if (!authService.isAdmin()) {
-      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
-    }
-
     ConnectionAction action;
     try {
       action = ConnectionAction.fromString(request.getAction());
@@ -91,5 +87,71 @@ public class OpenIdController {
     apiService.updateConnection(response.getCallbackUrl(), request);
 
     return ResponseBuilder.success(response);
+  }
+
+  @PostMapping("/events")
+  public ResponseEntity<?> createEvent(@RequestBody EventDto request) {
+    return ResponseBuilder.success(openIdService.createEvent(request));
+  }
+
+  @PostMapping("/scopes")
+  public ResponseEntity<?> createScope(@RequestBody ScopeDto request) {
+    return ResponseBuilder.success(openIdService.createScope(request));
+  }
+
+  @PostMapping("/event_scopes")
+  public ResponseEntity<?> mapScopesToEvents(@RequestBody ScopeListDto request) {
+    return ResponseBuilder.success(openIdService.mapScopeToEvent(request));
+  }
+
+  @GetMapping("/events")
+  public ResponseEntity<?> getEvents() {
+    var res = new ScopeListDto(openIdService.getAllScopeEvents());
+    return ResponseBuilder.success(res);
+  }
+
+  @PostMapping("/webhooks")
+  public ResponseEntity<?> registerWebhook(@RequestBody RegisterWebhookRequestDto request) {
+    var connection = authService.getAuthClient();
+
+    if (!ValidationUtils.isSameHost(connection.getDomain(), request.getRedirectUrl())) {
+      return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.INVALID_REDIRECT_URL);
+    }
+
+    EventScope eventScope;
+    try {
+      var eventType = HookEvent.fromCode(request.getEvent());
+      var scopeType = HookScope.fromCode(request.getScope());
+      eventScope = openIdService.getEventScope(eventType, scopeType)
+          .orElseThrow(() -> new IllegalArgumentException(MessageConst.INVALID_EVENT_OR_SCOPE));
+    } catch (IllegalArgumentException ignored) {
+      return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.INVALID_EVENT_OR_SCOPE);
+    }
+
+    var res = openIdService.createWebhook(request, eventScope);
+    return ResponseBuilder.success(res);
+  }
+
+  @GetMapping("/webhooks")
+  public ResponseEntity<?> getWebhooks() {
+    var connection = authService.getAuthClient();
+    var webhooks = openIdService.getWebhooksByConnectionId(connection.getId());
+    return ResponseBuilder.success(new WebhookListResponseDto(webhooks));
+  }
+
+  @DeleteMapping("/webhooks/{id}")
+  public ResponseEntity<?> deleteWebhook(@PathVariable String id) {
+    var webhook = openIdService.getWebhookById(id).orElse(null);
+    if (webhook == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.WEBHOOK_NOT_FOUND);
+    }
+
+    var connection = authService.getAuthClient();
+    if (!webhook.getConnection().getId().equals(connection.getId())) {
+      return ResponseBuilder.error(HttpStatus.FORBIDDEN.value(), MessageConst.ACCESS_DENIED);
+    }
+
+    openIdService.deleteWebhook(id);
+    return ResponseBuilder.success();
   }
 }

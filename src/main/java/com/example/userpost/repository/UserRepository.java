@@ -19,11 +19,19 @@ public interface UserRepository extends JpaRepository<User, String> {
 
   boolean existsByEmail(String email);
 
-  @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+  @Query("""
+    SELECT u FROM User u WHERE u.state = 1 AND
+    (LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    """)
   List<User> searchByKeyword(@Param("keyword") String keyword);
 
-  List<User> findAllByState(State state);
+  @Query("SELECT u FROM User u WHERE u.state = 1")
+  List<User> getActiveUsers();
 
   @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.id = :id AND u.state = 1")
   boolean existsAndActiveById(@Param("id") String id);
+
+  @Query("SELECT v FROM User v WHERE v.username = :username AND v.state = 1")
+  Optional<User> findActiveByUserName(@Param("username") String username);
 }

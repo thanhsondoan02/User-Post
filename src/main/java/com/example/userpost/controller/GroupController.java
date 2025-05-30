@@ -1,10 +1,16 @@
 package com.example.userpost.controller;
 
 import com.example.userpost.constant.GroupRole;
+import com.example.userpost.constant.HookEvent;
 import com.example.userpost.constant.MessageConst;
+import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.group.CreateGroupRequestDto;
 import com.example.userpost.dto.request.group.GroupUserRequestDto;
 import com.example.userpost.dto.request.group.UpdateGroupRequestDto;
+import com.example.userpost.dto.response.group.GroupListResponseDto;
+import com.example.userpost.dto.response.group.GroupResponseDto;
+import com.example.userpost.dto.response.group.GroupUserResponseDto;
+import com.example.userpost.service.IApiService;
 import com.example.userpost.service.IAuthService;
 import com.example.userpost.service.IGroupService;
 import com.example.userpost.service.IUserService;
@@ -24,11 +30,13 @@ public class GroupController {
   private final IGroupService groupService;
   private final IAuthService authService;
   private final IUserService userService;
+  private final IApiService apiService;
 
-  public GroupController(IGroupService groupService, IAuthService authService, IUserService userService) {
+  public GroupController(IGroupService groupService, IAuthService authService, IUserService userService, IApiService apiService) {
     this.groupService = groupService;
     this.authService = authService;
     this.userService = userService;
+    this.apiService = apiService;
   }
 
   @PostMapping
@@ -68,7 +76,12 @@ public class GroupController {
     }
 
     request.setUsers(users);
-    return ResponseBuilder.success(groupService.createGroup(request));
+    var res = groupService.createGroup(request);
+
+    // Send webhooks
+    apiService.sendWebhookScopeGroups(HookEvent.CREATE, res);
+
+    return ResponseBuilder.success();
   }
 
   @PutMapping("/{groupId}")
@@ -85,6 +98,14 @@ public class GroupController {
     }
 
     groupService.updateGroup(groupId, request);
+
+    // Send webhooks
+    var dto = new GroupResponseDto();
+    dto.setId(groupId);
+    dto.setName(request.getName());
+    dto.setThumbnail(request.getThumbnail());
+    apiService.sendWebhookScopeGroups(HookEvent.UPDATE, dto);
+
     return ResponseBuilder.success(null);
   }
 
@@ -98,6 +119,12 @@ public class GroupController {
     }
 
     groupService.deleteGroup(groupId);
+
+    // Send webhooks
+    var dto = new GroupResponseDto();
+    dto.setId(groupId);
+    apiService.sendWebhookScopeGroups(HookEvent.DELETE, dto);
+
     return ResponseBuilder.success();
   }
 
@@ -120,6 +147,16 @@ public class GroupController {
     }
 
     groupService.addUserToGroup(groupId, request);
+
+    // Send webhooks
+    var user = new GroupUserResponseDto();
+    user.setUserId(request.getUserId());
+    user.setRole(request.getRole().toString());
+    var dto = new GroupResponseDto();
+    dto.setId(groupId);
+    dto.setUsers(List.of(user));
+    apiService.sendWebhookScopeGroupMembers(HookEvent.CREATE, dto);
+
     return ResponseBuilder.success();
   }
 
@@ -135,14 +172,28 @@ public class GroupController {
       return ResponseBuilder.error(HttpStatus.CONFLICT.value(), MessageConst.USER_NOT_FOUND);
     }
     groupService.removeUserFromGroup(groupId, userId);
+
+    // Send webhooks
+    var user = new GroupUserResponseDto();
+    user.setUserId(userId);
+    var dto = new GroupResponseDto();
+    dto.setId(groupId);
+    dto.setUsers(List.of(user));
+    apiService.sendWebhookScopeGroupMembers(HookEvent.DELETE, dto);
+
     return ResponseBuilder.success();
   }
 
   @GetMapping()
   public ResponseEntity<?> getGroupList() {
-    var userId = authService.getAuthUser().getId();
-    var groups = groupService.getGroupList(userId);
-    return ResponseBuilder.success(groups);
+    if (authService.getAuthRole() == SecurityRole.CLIENT) {
+      var groups = groupService.getAll();
+      return ResponseBuilder.success(new GroupListResponseDto(groups, false));
+    } else {
+      var userId = authService.getAuthUser().getId();
+      var groups = groupService.getGroupList(userId);
+      return ResponseBuilder.success(new GroupListResponseDto(groups, false));
+    }
   }
 
   @GetMapping("/{groupId}")
