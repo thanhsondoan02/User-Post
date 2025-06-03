@@ -1,5 +1,6 @@
 package com.example.userpost.service.impl;
 
+import com.example.userpost.constant.ConnectionStatus;
 import com.example.userpost.constant.HookEvent;
 import com.example.userpost.constant.HookScope;
 import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
@@ -9,7 +10,7 @@ import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
 import com.example.userpost.dto.response.post.PostResponseDto;
 import com.example.userpost.dto.response.user.UserResponseDto;
-import com.example.userpost.repository.AcceptedConnectionRepository;
+import com.example.userpost.repository.ConnectionRepository;
 import com.example.userpost.repository.EventRepository;
 import com.example.userpost.repository.ScopeRepository;
 import com.example.userpost.repository.WebhookRepository;
@@ -30,13 +31,13 @@ public class ApiService implements IApiService {
 
   private final RestTemplate restTemplate;
   private final WebhookRepository webhookRepository;
-  private final AcceptedConnectionRepository connectionRepository;
+  private final ConnectionRepository connectionRepository;
   private final EventRepository eventRepository;
   private final ScopeRepository scopeRepository;
 
   public ApiService(
     RestTemplate restTemplate, WebhookRepository webhookRepository,
-    AcceptedConnectionRepository connectionRepository,
+    ConnectionRepository connectionRepository,
     EventRepository eventRepository, ScopeRepository scopeRepository
   ) {
     this.restTemplate = restTemplate;
@@ -98,9 +99,12 @@ public class ApiService implements IApiService {
 
       var webhooks = webhookRepository.findActiveByScopeEvent(scope, event);
       for (var webhook : webhooks) {
-        var connection = connectionRepository.findActiveById(webhook.getConnection().getId()).orElse(null);
-        if (connection != null) { // Only send to active connections
-          body.setConnectionId(connection.getId());
+        var connectionId = webhook.getConnection().getId();
+        var isConnectionAccepted = connectionRepository
+          .findActiveByIdAndStatus(connectionId, ConnectionStatus.ACCEPTED)
+          .isPresent();
+        if (isConnectionAccepted) { // Only send to accepted connections
+          body.setConnectionId(connectionId);
           sendEvent(webhook.getRedirectUrl(), body);
         }
       }

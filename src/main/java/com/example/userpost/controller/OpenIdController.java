@@ -53,18 +53,15 @@ public class OpenIdController {
 
   @GetMapping("/connections")
   public ResponseEntity<?> getConnections(@RequestParam(required = false) String status) {
-    ConnectionStatus connectionStatus;
-    if (status != null) {
+    if (status == null) {
+      return ResponseBuilder.success(openIdService.getAllConnections());
+    } else {
       try {
-        connectionStatus = ConnectionStatus.fromString(status);
+        return ResponseBuilder.success(openIdService.getFilteredConnections(ConnectionStatus.fromString(status)));
       } catch (IllegalArgumentException e) {
         return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
       }
-    } else {
-      connectionStatus = null;
     }
-
-    return ResponseBuilder.success(openIdService.getConnections(connectionStatus));
   }
 
   @PostMapping("/connections/{id}")
@@ -118,7 +115,7 @@ public class OpenIdController {
   public ResponseEntity<?> registerWebhook(@RequestBody RegisterWebhookRequestDto request) {
     var connection = authService.getAuthClient();
 
-    if (!ValidationUtils.isSameHost(connection.getDomain(), request.getRedirectUrl())) {
+    if (!ValidationUtils.isSameHost(connection.getTargetServer().getDomain(), request.getRedirectUrl())) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.INVALID_REDIRECT_URL);
     }
 
@@ -127,7 +124,7 @@ public class OpenIdController {
       var eventType = HookEvent.fromCode(request.getEvent());
       var scopeType = HookScope.fromCode(request.getScope());
       eventScope = openIdService.getEventScope(eventType, scopeType)
-          .orElseThrow(() -> new IllegalArgumentException(MessageConst.INVALID_EVENT_OR_SCOPE));
+        .orElseThrow(() -> new IllegalArgumentException(MessageConst.INVALID_EVENT_OR_SCOPE));
     } catch (IllegalArgumentException ignored) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.INVALID_EVENT_OR_SCOPE);
     }

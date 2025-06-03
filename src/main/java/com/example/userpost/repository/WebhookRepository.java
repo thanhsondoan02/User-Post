@@ -22,12 +22,4 @@ public interface WebhookRepository extends JpaRepository<Webhook, String> {
     AND w.state = 1
     """)
   List<Webhook> findActiveByScopeEvent(@Param("scope") Scope scope, @Param("event") Event event);
-
-  @Query("""
-    SELECT w FROM Webhook w
-    WHERE w.eventScope = :eventScope
-    AND w.connection = :connection
-    AND w.state = 0
-    """)
-  Optional<Webhook> findInactive(EventScope eventScope, AcceptedConnection connection);
 }

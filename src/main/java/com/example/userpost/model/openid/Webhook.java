@@ -23,7 +23,7 @@ public class Webhook extends BaseSqlEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "connection_id", nullable = false)
-  private AcceptedConnection connection;
+  private Connection connection;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "event_scope_id", nullable = false)
@@ -32,10 +32,7 @@ public class Webhook extends BaseSqlEntity {
   @Column(name = "redirect_url", nullable = false)
   private String redirectUrl;
 
-  public Webhook(AcceptedConnection connection, String redirectUrl, EventScope eventScope) {
-    super();
-    this.connection = connection;
-    this.redirectUrl = redirectUrl;
-    this.eventScope = eventScope;
-  }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "target_server_id", nullable = false)
+  private Server targetServer;
 }

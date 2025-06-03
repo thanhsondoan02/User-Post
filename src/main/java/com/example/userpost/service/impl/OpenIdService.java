@@ -24,118 +24,96 @@ import java.util.UUID;
 @Service
 public class OpenIdService implements IOpenIdService {
 
-  private final AcceptedConnectionRepository acceptedConnectionRepo;
-  private final PendingConnectionRepository pendingConnectionRepo;
+  private final ConnectionRepository connectionRepository;
   private final PasswordEncoder passwordEncoder;
   private final EventRepository eventRepository;
   private final ScopeRepository scopeRepository;
   private final WebhookRepository webhookRepository;
   private final AuthService authService;
+  private final ServerRepository serverRepository;
 
   public OpenIdService(
-    AcceptedConnectionRepository acceptedConnectionRepo,
-    PendingConnectionRepository pendingConnectionRepo,
+    ConnectionRepository connectionRepository,
     PasswordEncoder passwordEncoder,
     EventRepository eventRepository,
     ScopeRepository scopeRepository,
     WebhookRepository webhookRepository,
-    AuthService authService
-  ) {
-    this.acceptedConnectionRepo = acceptedConnectionRepo;
-    this.pendingConnectionRepo = pendingConnectionRepo;
+    AuthService authService,
+    ServerRepository serverRepository) {
+    this.connectionRepository = connectionRepository;
     this.passwordEncoder = passwordEncoder;
     this.eventRepository = eventRepository;
     this.scopeRepository = scopeRepository;
     this.webhookRepository = webhookRepository;
     this.authService = authService;
+    this.serverRepository = serverRepository;
   }
 
   @Override
   public boolean isConnectionWithDomainExist(String domain) {
-    return pendingConnectionRepo.existsByDomainAndState(domain, State.ACTIVE) ||
-           acceptedConnectionRepo.existsByDomainAndState(domain, State.ACTIVE);
+    return serverRepository.isConnectionWithServerExists(domain);
   }
 
   @Override
   public ConnectionDto addPendingConnections(ConnectRequestDto request) {
-    var connection = pendingConnectionRepo.getByDomain(request.getDomain());
+    var server = new Server();
+    server.setName(request.getName());
+    server.setDomain(request.getDomain());
 
-    if (connection.isPresent()) {
-      if (connection.get().getState() == State.ACTIVE) {
-        throw new RuntimeException("Connection with this domain already exists and is pending.");
-      } else {
-        pendingConnectionRepo.delete(connection.get());
-      }
-    }
+    var newConnection = new Connection();
+    newConnection.setId(request.getId());
+    newConnection.setTargetServer(server);
+    newConnection.setCallbackUrl(request.getCallbackUrl());
+    newConnection.setStatus(ConnectionStatus.PENDING);
 
-    var newConnection = new PendingConnection(
-      request.getName(),
-      request.getDomain(),
-      request.getCallbackUrl()
-    );
-
-    return new ConnectionDto(pendingConnectionRepo.save(newConnection));
+    return new ConnectionDto(connectionRepository.save(newConnection));
   }
 
   @Override
   public boolean isConnectionExistAndPending(String id) {
-    return pendingConnectionRepo.existsAndActiveById(id);
+    return connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING).isPresent();
   }
 
   @Override
   public ConnectionDto updateConnection(String id, ConnectionAction action) {
+    var connection = connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING)
+      .orElseThrow(() -> new RuntimeException("Connection not found"));
     switch (action) {
       case ACCEPT -> {
-        var pendingConnection = pendingConnectionRepo.findByIdAndState(id, State.ACTIVE)
-          .orElseThrow(() -> new RuntimeException("Connection not found"));
-
-        var newConnection = new AcceptedConnection(pendingConnection);
-
         //  Generate clientId and clientSecret
         var clientId = UUID.randomUUID().toString().replace("-", "");
-        newConnection.setClientId(clientId);
-
         var clientSecret = PasswordUtils.generateSecurePassword();
-        newConnection.setClientSecret(passwordEncoder.encode(clientSecret));
+        connection.setClientId(clientId);
+        connection.setClientSecret(passwordEncoder.encode(clientSecret));
 
-        // Save new connection and delete pending connection
-        var saved = acceptedConnectionRepo.save(newConnection);
-        pendingConnectionRepo.deleteById(pendingConnection.getId());
+        // Save new connection to database
+        connection.setStatus(ConnectionStatus.ACCEPTED);
+        var saved = connectionRepository.save(connection);
 
+        // Return connection dto with raw clientSecret
         var res = new ConnectionDto(saved);
         res.setClientSecret(clientSecret);
         return res;
       }
       case REJECT -> {
-        pendingConnectionRepo.updateState(id, State.INACTIVE);
-        return new ConnectionDto(pendingConnectionRepo.findById(id).orElseThrow(() -> new RuntimeException("Connection not found")));
+        connection.setStatus(ConnectionStatus.REJECTED);
+        return new ConnectionDto(connectionRepository.save(connection));
       }
       default -> throw new IllegalArgumentException("Invalid action: " + action);
     }
   }
 
   @Override
-  public ConnectionListResponseDto getConnections(ConnectionStatus status) {
-    if (status != null) {
-      switch (status) {
-        case PENDING -> {
-          var connectionList = pendingConnectionRepo.findAllByState(State.ACTIVE);
-          return new ConnectionListResponseDto(new ArrayList<>(connectionList));
-        }
-        case ACCEPTED -> {
-          var connectionList = acceptedConnectionRepo.findAllByState(State.ACTIVE);
-          return new ConnectionListResponseDto(new ArrayList<>(connectionList));
-        }
-        case REJECTED -> {
-          var connectionList = pendingConnectionRepo.findAllByState(State.INACTIVE);
-          return new ConnectionListResponseDto(new ArrayList<>(connectionList));
-        }
-      }
-    }
-    List<BaseConnection> connectionList = new ArrayList<>();
-    connectionList.addAll(acceptedConnectionRepo.findAllByState(State.ACTIVE));
-    connectionList.addAll(pendingConnectionRepo.findAllByState(State.ACTIVE));
-    connectionList.addAll(pendingConnectionRepo.findAllByState(State.INACTIVE));
+  public ConnectionListResponseDto getFilteredConnections(ConnectionStatus status) {
+    return new ConnectionListResponseDto(connectionRepository.findActiveByStatus(status));
+  }
+
+  @Override
+  public ConnectionListResponseDto getAllConnections() {
+    var connectionList = new ArrayList<Connection>();
+    connectionList.addAll(connectionRepository.findActiveByStatus(ConnectionStatus.PENDING));
+    connectionList.addAll(connectionRepository.findActiveByStatus(ConnectionStatus.ACCEPTED));
+    connectionList.addAll(connectionRepository.findActiveByStatus(ConnectionStatus.REJECTED));
     return new ConnectionListResponseDto(connectionList);
   }
 
@@ -183,9 +161,6 @@ public class OpenIdService implements IOpenIdService {
   @Override
   public WebhookResponseDto createWebhook(RegisterWebhookRequestDto request, EventScope eventScope) {
     var connection = authService.getAuthClient();
-
-    // Check if this connection is register this type of event and scope before and delete it if exists
-    webhookRepository.findInactive(eventScope, connection).ifPresent(webhookRepository::delete);
 
     var webhook = new Webhook();
     webhook.setRedirectUrl(request.getRedirectUrl());

@@ -4,6 +4,7 @@ import com.example.userpost.constant.HookEvent;
 import com.example.userpost.constant.MessageConst;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
+import com.example.userpost.dto.request.auth.RefreshTokenRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
 import com.example.userpost.dto.request.openid.auth.OpenIdLoginRequestDto;
 import com.example.userpost.dto.response.user.UserResponseDto;
@@ -63,6 +64,15 @@ public class AuthController {
           return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), MessageConst.INVALID_EMAIL_OR_PASSWORD);
         }
       }
+    }
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequestDto request) {
+    try {
+      return ResponseBuilder.success(authService.refreshToken(request.getRefreshToken()));
+    } catch (BadCredentialsException e) {
+      return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), MessageConst.INVALID_REFRESH_TOKEN);
     }
   }
 

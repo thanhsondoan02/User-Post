@@ -4,16 +4,21 @@ import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
-import com.example.userpost.dto.response.auth.JwtResponseDto;
-import com.example.userpost.model.openid.AcceptedConnection;
+import com.example.userpost.dto.response.auth.ServerJwtResponseDto;
+import com.example.userpost.dto.response.auth.UserJwtResponseDto;
+import com.example.userpost.model.openid.Connection;
 import com.example.userpost.model.user.User;
 
 public interface IAuthService {
-  JwtResponseDto register(RegisterRequestDto request);
+  UserJwtResponseDto register(RegisterRequestDto request);
 
-  JwtResponseDto login(String username, String password);
+  UserJwtResponseDto login(String username, String password);
 
-  JwtResponseDto loginOpenId(String clientId, String clientSecret);
+  UserJwtResponseDto refreshToken(String refreshToken);
+
+  ServerJwtResponseDto loginOpenId(String clientId, String clientSecret);
+
+  ServerJwtResponseDto refreshOpenIdToken(String refreshToken);
 
   void changePassword(String newPassword);
 
@@ -33,7 +38,7 @@ public interface IAuthService {
 
   User getAuthUser();
 
-  AcceptedConnection getAuthClient();
+  Connection getAuthClient();
 
   SecurityRole getAuthRole();
 }

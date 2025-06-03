@@ -1,7 +1,7 @@
 package com.example.userpost.security.auth_provider;
 
 import com.example.userpost.constant.SecurityRole;
-import com.example.userpost.repository.AcceptedConnectionRepository;
+import com.example.userpost.repository.ConnectionRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,10 +15,10 @@ import java.util.List;
 
 @Component
 public class ClientCredentialsAuthProvider implements AuthenticationProvider {
-  private final AcceptedConnectionRepository connectionRepository;
+  private final ConnectionRepository connectionRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public ClientCredentialsAuthProvider(AcceptedConnectionRepository connectionRepository, PasswordEncoder passwordEncoder) {
+  public ClientCredentialsAuthProvider(ConnectionRepository connectionRepository, PasswordEncoder passwordEncoder) {
     this.connectionRepository = connectionRepository;
     this.passwordEncoder = passwordEncoder;
   }

@@ -5,8 +5,11 @@ import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.dto.request.auth.ChangePasswordRequestDto;
 import com.example.userpost.dto.request.auth.LoginRequestDto;
 import com.example.userpost.dto.request.auth.RegisterRequestDto;
-import com.example.userpost.dto.response.auth.JwtResponseDto;
-import com.example.userpost.model.openid.AcceptedConnection;
+import com.example.userpost.dto.response.auth.ServerJwtResponseDto;
+import com.example.userpost.dto.response.auth.UserJwtResponseDto;
+import com.example.userpost.dto.response.openid.connect.ConnectionDto;
+import com.example.userpost.dto.response.user.UserResponseDto;
+import com.example.userpost.model.openid.Connection;
 import com.example.userpost.model.user.User;
 import com.example.userpost.repository.UserRepository;
 import com.example.userpost.security.JwtUtils;
@@ -35,7 +38,7 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public JwtResponseDto register(RegisterRequestDto request) {
+  public UserJwtResponseDto register(RegisterRequestDto request) {
     String username = request.getUsername();
     String password = request.getPassword();
 
@@ -55,25 +58,58 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public JwtResponseDto login(String username, String password) {
-    var authentication = authenticationManager.authenticate(
-      new UsernamePasswordAuthenticationToken(username, password));
-
-    var user = (User) authentication.getPrincipal();
+  public UserJwtResponseDto login(String username, String password) {
+    var authentication = authenticationManager
+      .authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    String token = jwtUtils.generateToken(username, password, user.getRole());
-    return new JwtResponseDto(token);
+
+    var user = (User) authentication.getPrincipal();
+    var userToken = jwtUtils.genRefreshAndAccessToken(user);
+
+    return new UserJwtResponseDto(
+      userToken.getRefreshToken(),
+      userToken.getAccessToken(),
+      new UserResponseDto(user)
+    );
   }
 
   @Override
-  public JwtResponseDto loginOpenId(String clientId, String clientSecret) {
+  public UserJwtResponseDto refreshToken(String refreshToken) {
+    var userToken = jwtUtils.refreshTokenUser(refreshToken);
+    return new UserJwtResponseDto(
+      userToken.getRefreshToken(),
+      userToken.getAccessToken(),
+      new UserResponseDto(userToken.getUser())
+    );
+  }
+
+  @Override
+  public ServerJwtResponseDto loginOpenId(String clientId, String clientSecret) {
     Authentication authentication = authenticationManager.authenticate(
       new UsernamePasswordAuthenticationToken(clientId, clientSecret));
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    String token = jwtUtils.generateTokenOpenid(clientId, clientSecret);
-    return new JwtResponseDto(token);
+
+    var connection = (Connection) authentication.getPrincipal();
+
+    var serverToken = jwtUtils.genRefreshAndAccessToken(connection.getTargetServer());
+    return new ServerJwtResponseDto(
+      serverToken.getRefreshToken(),
+      serverToken.getAccessToken(),
+      new ConnectionDto(connection)
+    );
+  }
+
+  @Override
+  public ServerJwtResponseDto refreshOpenIdToken(String refreshToken) {
+    var serverToken = jwtUtils.refreshTokenServer(refreshToken);
+//    return new ServerJwtResponseDto(
+//      serverToken.getRefreshToken(),
+//      serverToken.getAccessToken(),
+//      new ConnectionDto(serverToken.getServer())
+//    );
+    return null;
   }
 
   @Override
@@ -131,9 +167,9 @@ public class AuthService implements IAuthService {
   }
 
   @Override
-  public AcceptedConnection getAuthClient() {
+  public Connection getAuthClient() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
-    return (AcceptedConnection) authentication.getPrincipal();
+    return (Connection) authentication.getPrincipal();
   }
 
   @Override

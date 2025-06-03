@@ -1,10 +1,6 @@
 package com.example.userpost.dto.response.openid.connect;
 
-import com.example.userpost.constant.ConnectionStatus;
-import com.example.userpost.constant.State;
-import com.example.userpost.model.openid.AcceptedConnection;
-import com.example.userpost.model.openid.BaseConnection;
-import com.example.userpost.model.openid.PendingConnection;
+import com.example.userpost.model.openid.Connection;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,28 +16,14 @@ public class ConnectionDto {
   private Long createdAt;
   private String status;
 
-  public ConnectionDto(BaseConnection connection) {
+  public ConnectionDto(Connection connection) {
     this.id = connection.getId();
-    this.name = connection.getName();
-    this.domain = connection.getDomain();
+    this.name = connection.getTargetServer().getName();
+    this.domain = connection.getTargetServer().getDomain();
     this.callbackUrl = connection.getCallbackUrl();
     this.createdAt = connection.getCreatedAt();
-
-    if (connection instanceof AcceptedConnection accepted) {
-      this.clientId = accepted.getClientId();
-      this.status = ConnectionStatus.ACCEPTED.toString();
-    }
-
-    if (connection instanceof PendingConnection pending) {
-      switch (pending.getState()) {
-        case ACTIVE -> {
-          this.status = ConnectionStatus.PENDING.toString();
-        }
-        case INACTIVE -> {
-          this.status = ConnectionStatus.REJECTED.toString();
-        }
-      }
-    }
+    this.status = connection.getStatus().toString();
+    this.clientId = connection.getClientId();
   }
 }
 

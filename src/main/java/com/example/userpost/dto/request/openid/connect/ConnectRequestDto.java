@@ -9,6 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ConnectRequestDto {
   private String name;
+  private String id;
   private String domain;
   private String callbackUrl;
 }

@@ -1,6 +1,6 @@
 package com.example.userpost.dto.response.openid.connect;
 
-import com.example.userpost.model.openid.BaseConnection;
+import com.example.userpost.model.openid.Connection;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class ConnectionListResponseDto {
   private List<ConnectionDto> connections;
 
-  public ConnectionListResponseDto(List<BaseConnection> connections) {
+  public ConnectionListResponseDto(List<Connection> connections) {
     this.connections = connections.stream()
       .map(ConnectionDto::new)
       .toList();

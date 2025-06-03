@@ -39,6 +39,7 @@ public final class MessageConst {
   public static final String INVALID_EVENT_OR_SCOPE = "Invalid event or scope";
   public static final String WEBHOOK_NOT_FOUND = "Webhook not found";
   public static final String CONNECTION_EXISTS = "Connection already exists";
+  public static final String INVALID_REFRESH_TOKEN = "Invalid refresh token";
 
   private MessageConst() {
   }

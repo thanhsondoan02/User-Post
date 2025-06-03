@@ -28,7 +28,9 @@ public interface IOpenIdService {
 
   ConnectionDto updateConnection(String id, ConnectionAction action);
 
-  ConnectionListResponseDto getConnections(ConnectionStatus status);
+  ConnectionListResponseDto getFilteredConnections(ConnectionStatus status);
+
+  ConnectionListResponseDto getAllConnections();
 
   EventDto createEvent(EventDto request);
 

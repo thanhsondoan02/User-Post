@@ -8,9 +8,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "jwt")
-public class JwtConfig {
-  private String secret;
-  private long accessTokenExpiration;
-  private long refreshTokenExpiration;
+@ConfigurationProperties(prefix = "server")
+public class ServerConfig {
+  private String name;
+  private String domain;
 }

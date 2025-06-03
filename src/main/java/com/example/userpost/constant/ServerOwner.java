@@ -1,0 +1,20 @@
+package com.example.userpost.constant;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public enum ServerOwner {
+  OWN(1),
+  EXTERNAL(0);
+
+  private final int code;
+
+  public static ServerOwner fromCode(int code) {
+    for (ServerOwner state : values()) {
+      if (state.code == code) return state;
+    }
+    throw new IllegalArgumentException("Invalid code: " + code);
+  }
+}
