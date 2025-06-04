@@ -18,7 +18,7 @@ public class ConnectionDto {
 
   public ConnectionDto(Connection connection) {
     this.id = connection.getId();
-    this.name = connection.getTargetServer().getName();
+    this.name = connection.getName();
     this.domain = connection.getTargetServer().getDomain();
     this.callbackUrl = connection.getCallbackUrl();
     this.createdAt = connection.getCreatedAt();

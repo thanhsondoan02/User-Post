@@ -56,13 +56,25 @@ public class OpenIdService implements IOpenIdService {
 
   @Override
   public ConnectionDto addPendingConnections(ConnectRequestDto request) {
-    var server = new Server();
-    server.setName(request.getName());
-    server.setDomain(request.getDomain());
+    if (connectionRepository.existsById(request.getId())) {
+      throw new RuntimeException("Connection with this ID already exists");
+    }
+
+    var existingServer = serverRepository.findByDomain(request.getDomain());
+    Server server;
+
+    if (existingServer.isPresent()) {
+      server = existingServer.get();
+    } else {
+      server = new Server();
+      server.setDomain(request.getDomain());
+      server = serverRepository.save(server);
+    }
 
     var newConnection = new Connection();
     newConnection.setId(request.getId());
     newConnection.setTargetServer(server);
+    newConnection.setName(request.getName());
     newConnection.setCallbackUrl(request.getCallbackUrl());
     newConnection.setStatus(ConnectionStatus.PENDING);
 

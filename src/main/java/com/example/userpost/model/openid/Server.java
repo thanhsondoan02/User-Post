@@ -3,21 +3,18 @@ package com.example.userpost.model.openid;
 import com.example.userpost.constant.ServerOwner;
 import com.example.userpost.model.base.BaseSqlEntity;
 import com.example.userpost.util.convert.ServerOwnerConverter;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "servers")
 @Getter
 @Setter
 public class Server extends BaseSqlEntity {
-
-  @Column(name = "name", length = 100, nullable = false)
-  protected String name;
 
   @Column(name = "domain", nullable = false, unique = true)
   protected String domain;
@@ -26,14 +23,16 @@ public class Server extends BaseSqlEntity {
   @Convert(converter = ServerOwnerConverter.class)
   protected ServerOwner owner;
 
+  @OneToMany(mappedBy = "targetServer", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Connection> connections = new ArrayList<>();
+
   public Server() {
     super();
     this.owner = ServerOwner.EXTERNAL;
   }
 
-  public Server(String name, String domain) {
+  public Server(String domain) {
     super();
-    this.name = name;
     this.domain = domain;
     this.owner = ServerOwner.EXTERNAL;
   }

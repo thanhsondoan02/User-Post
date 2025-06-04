@@ -17,8 +17,11 @@ public interface ServerRepository extends JpaRepository<Server, String> {
   @Query("SELECT c FROM Server c WHERE c.owner = 1 AND c.state = 1")
   Optional<Server> findOwnerServer();
 
-  @Query("SELECT s FROM Server s JOIN Connection c " +
+  @Query("SELECT count(c) > 0 FROM Server s JOIN s.connections c " +
     "WHERE s.domain = :domain AND s.owner = 0 AND s.state = 1" +
     "AND (c.status = 0 or c.status = 1) AND c.state = 1")
   boolean isConnectionWithServerExists(@Param("domain") String domain);
+
+  @Query("SELECT s FROM Server s WHERE s.domain = :domain and s.state = 1")
+  Optional<Server> findByDomain(@Param("domain") String domain);
 }

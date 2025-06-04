@@ -1,5 +1,6 @@
 package com.example.userpost.dto.response.user;
 
+import com.example.userpost.constant.Role;
 import com.example.userpost.model.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,9 @@ public class UserResponseDto {
       this.gender = user.getGender().name();
     }
     this.dateOfBirth = user.getDateOfBirth();
+    if (user.getRole() == Role.ADMIN) {
+      this.role = user.getRole().toString();
+    }
   }
 
   public static UserResponseDto cloneFromUser(User user) {
