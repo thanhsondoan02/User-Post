@@ -11,10 +11,15 @@ import java.util.Optional;
 
 public interface ConnectionRepository extends JpaRepository<Connection, String> {
 
+  @Query("SELECT v FROM Connection v WHERE v.id = :id AND v.state = 1")
+  Optional<Connection> findActiveById(@Param("id") String id);
+
   @Query("SELECT v FROM Connection v WHERE v.status = :status AND v.state = 1")
   List<Connection> findActiveByStatus(@Param("status") ConnectionStatus status);
 
-  @Query("SELECT v FROM Connection v WHERE v.clientId = :clientId AND v.state = 1")
+  @Query("SELECT c FROM Connection c " +
+    "WHERE c.clientId = :clientId AND c.state = 1" +
+    "AND c.targetServer.state = 1")
   Optional<Connection> findActiveByClientId(@Param("clientId") String clientId);
 
   @Query("SELECT v FROM Connection v WHERE v.id = :id AND v.status = :status AND v.state = 1")

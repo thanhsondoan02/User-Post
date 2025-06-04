@@ -1,6 +1,9 @@
 package com.example.userpost.service.impl;
 
-import com.example.userpost.constant.*;
+import com.example.userpost.constant.ConnectionStatus;
+import com.example.userpost.constant.HookEvent;
+import com.example.userpost.constant.HookScope;
+import com.example.userpost.constant.State;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.webhook.RegisterWebhookRequestDto;
 import com.example.userpost.dto.response.openid.connect.ConnectionDto;
@@ -31,6 +34,7 @@ public class OpenIdService implements IOpenIdService {
   private final WebhookRepository webhookRepository;
   private final AuthService authService;
   private final ServerRepository serverRepository;
+  private final ServerTokenRepository serverTokenRepository;
 
   public OpenIdService(
     ConnectionRepository connectionRepository,
@@ -39,7 +43,9 @@ public class OpenIdService implements IOpenIdService {
     ScopeRepository scopeRepository,
     WebhookRepository webhookRepository,
     AuthService authService,
-    ServerRepository serverRepository) {
+    ServerRepository serverRepository,
+    ServerTokenRepository serverTokenRepository
+  ) {
     this.connectionRepository = connectionRepository;
     this.passwordEncoder = passwordEncoder;
     this.eventRepository = eventRepository;
@@ -47,6 +53,7 @@ public class OpenIdService implements IOpenIdService {
     this.webhookRepository = webhookRepository;
     this.authService = authService;
     this.serverRepository = serverRepository;
+    this.serverTokenRepository = serverTokenRepository;
   }
 
   @Override
@@ -82,37 +89,49 @@ public class OpenIdService implements IOpenIdService {
   }
 
   @Override
-  public boolean isConnectionExistAndPending(String id) {
-    return connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING).isPresent();
+  public Optional<Connection> getConnectionById(String id) {
+    return connectionRepository.findActiveById(id);
   }
 
   @Override
-  public ConnectionDto updateConnection(String id, ConnectionAction action) {
-    var connection = connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING)
+  public ConnectionDto acceptConnection(String id) {
+    var connection = connectionRepository.findActiveById(id)
       .orElseThrow(() -> new RuntimeException("Connection not found"));
-    switch (action) {
-      case ACCEPT -> {
-        //  Generate clientId and clientSecret
-        var clientId = UUID.randomUUID().toString().replace("-", "");
-        var clientSecret = PasswordUtils.generateSecurePassword();
-        connection.setClientId(clientId);
-        connection.setClientSecret(passwordEncoder.encode(clientSecret));
 
-        // Save new connection to database
-        connection.setStatus(ConnectionStatus.ACCEPTED);
-        var saved = connectionRepository.save(connection);
+    String clientSecret;
 
-        // Return connection dto with raw clientSecret
-        var res = new ConnectionDto(saved);
-        res.setClientSecret(clientSecret);
-        return res;
-      }
-      case REJECT -> {
-        connection.setStatus(ConnectionStatus.REJECTED);
-        return new ConnectionDto(connectionRepository.save(connection));
-      }
-      default -> throw new IllegalArgumentException("Invalid action: " + action);
+    if (connection.getClientId() == null) {
+      // Generate clientId and clientSecret
+      var clientId = UUID.randomUUID().toString().replace("-", "");
+      clientSecret = PasswordUtils.generateSecurePassword();
+      connection.setClientId(clientId);
+      connection.setClientSecret(passwordEncoder.encode(clientSecret));
+    } else {
+      clientSecret = null;
     }
+
+    // Save updated connection to database
+    connection.setStatus(ConnectionStatus.ACCEPTED);
+    var saved = connectionRepository.save(connection);
+
+    // Return connection dto with raw clientSecret
+    var res = new ConnectionDto(saved);
+    if (clientSecret != null) {
+      res.setClientSecret(clientSecret);
+    }
+    return res;
+  }
+
+  @Override
+  public ConnectionDto rejectConnection(String id) {
+    var connection = connectionRepository.findActiveById(id)
+      .orElseThrow(() -> new RuntimeException("Connection not found"));
+    connection.setStatus(ConnectionStatus.REJECTED);
+
+    serverTokenRepository.deleteTokensByConnectionId(id);
+    webhookRepository.deleteWebhooksByConnectionId(id);
+
+    return new ConnectionDto(connectionRepository.save(connection));
   }
 
   @Override
@@ -152,7 +171,7 @@ public class OpenIdService implements IOpenIdService {
         List<EventScope> events = new ArrayList<>();
         for (var eventDto : scopeDto.getEvents()) {
           var event = eventRepository.findActiveByType(eventDto.getType())
-              .orElseThrow(() -> new RuntimeException("Event not found: " + eventDto.getType()));
+            .orElseThrow(() -> new RuntimeException("Event not found: " + eventDto.getType()));
           events.add(new EventScope(event, scope));
         }
         scope.getEvents().addAll(events);
@@ -196,7 +215,7 @@ public class OpenIdService implements IOpenIdService {
   @Override
   public void deleteWebhook(String id) {
     var webhook = webhookRepository.findActiveById(id)
-        .orElseThrow(() -> new RuntimeException("Webhook not found: " + id));
+      .orElseThrow(() -> new RuntimeException("Webhook not found: " + id));
     webhook.setState(State.INACTIVE);
     webhookRepository.save(webhook);
   }

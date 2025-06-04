@@ -76,6 +76,15 @@ public class AuthController {
     }
   }
 
+  @PostMapping("/refresh-openid")
+  public ResponseEntity<?> refreshTokenOpenId(@RequestBody RefreshTokenRequestDto request) {
+    try {
+      return ResponseBuilder.success(authService.refreshOpenIdToken(request.getRefreshToken()));
+    } catch (BadCredentialsException e) {
+      return ResponseBuilder.error(HttpStatus.UNAUTHORIZED.value(), MessageConst.INVALID_REFRESH_TOKEN);
+    }
+  }
+
   @PostMapping("/login-openid")
   public ResponseEntity<?> loginOpenId(@RequestBody OpenIdLoginRequestDto request) {
     var clientId = request.getClientId();

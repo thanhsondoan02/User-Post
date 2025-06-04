@@ -12,6 +12,7 @@ import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
 import com.example.userpost.dto.response.openid.event.ScopeListDto;
 import com.example.userpost.dto.response.openid.webhook.WebhookResponseDto;
+import com.example.userpost.model.openid.Connection;
 import com.example.userpost.model.openid.EventScope;
 import com.example.userpost.model.openid.Scope;
 import com.example.userpost.model.openid.Webhook;
@@ -24,9 +25,11 @@ public interface IOpenIdService {
 
   ConnectionDto addPendingConnections(ConnectRequestDto request);
 
-  boolean isConnectionExistAndPending(String id);
+  Optional<Connection> getConnectionById(String id);
 
-  ConnectionDto updateConnection(String id, ConnectionAction action);
+  ConnectionDto acceptConnection(String id);
+
+  ConnectionDto rejectConnection(String id);
 
   ConnectionListResponseDto getFilteredConnections(ConnectionStatus status);
 

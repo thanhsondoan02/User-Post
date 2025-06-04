@@ -2,6 +2,7 @@ package com.example.userpost.security;
 
 import com.example.userpost.config.JwtConfig;
 import com.example.userpost.constant.SecurityRole;
+import com.example.userpost.model.openid.Connection;
 import com.example.userpost.model.openid.Server;
 import com.example.userpost.model.token.ServerToken;
 import com.example.userpost.model.token.UserToken;
@@ -58,11 +59,13 @@ public class JwtUtils {
     return userTokenRepository.save(userToken);
   }
 
-  public ServerToken genRefreshAndAccessToken(Server server) {
+  public ServerToken genRefreshAndAccessToken(Connection connection) {
     var refreshExpiredAt = System.currentTimeMillis() + jwtConfig.getRefreshTokenExpiration();
     var accessExpiredAt = System.currentTimeMillis() + jwtConfig.getAccessTokenExpiration();
+    var server = connection.getTargetServer();
     var userToken = new ServerToken(
       server,
+      connection,
       generateRefreshToken(),
       refreshExpiredAt,
       generateAccessToken(server, accessExpiredAt),

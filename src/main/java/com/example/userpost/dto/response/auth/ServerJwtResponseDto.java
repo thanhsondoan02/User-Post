@@ -13,6 +13,6 @@ import lombok.Setter;
 public class ServerJwtResponseDto {
   private String refreshToken;
   private String accessToken;
-  private ConnectionDto server;
+  private ConnectionDto connection;
 }
 

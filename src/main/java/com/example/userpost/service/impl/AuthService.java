@@ -93,7 +93,7 @@ public class AuthService implements IAuthService {
 
     var connection = (Connection) authentication.getPrincipal();
 
-    var serverToken = jwtUtils.genRefreshAndAccessToken(connection.getTargetServer());
+    var serverToken = jwtUtils.genRefreshAndAccessToken(connection);
     return new ServerJwtResponseDto(
       serverToken.getRefreshToken(),
       serverToken.getAccessToken(),
@@ -104,12 +104,11 @@ public class AuthService implements IAuthService {
   @Override
   public ServerJwtResponseDto refreshOpenIdToken(String refreshToken) {
     var serverToken = jwtUtils.refreshTokenServer(refreshToken);
-//    return new ServerJwtResponseDto(
-//      serverToken.getRefreshToken(),
-//      serverToken.getAccessToken(),
-//      new ConnectionDto(serverToken.getServer())
-//    );
-    return null;
+    return new ServerJwtResponseDto(
+      serverToken.getRefreshToken(),
+      serverToken.getAccessToken(),
+      new ConnectionDto(serverToken.getConnection())
+    );
   }
 
   @Override

@@ -53,7 +53,7 @@ public class SecurityConfig {
         // Public endpoints
         .requestMatchers(
           "/api/auth/register", "/api/auth/login",
-          "/api/auth/login-openid", "api/auth/refresh"
+          "/api/auth/login-openid", "api/auth/refresh", "api/auth/refresh-openid"
         ).permitAll()
         .requestMatchers(HttpMethod.POST, "/api/connections").permitAll() // Create a new connection
 

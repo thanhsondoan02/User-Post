@@ -1,5 +1,6 @@
 package com.example.userpost.model.token;
 
+import com.example.userpost.model.openid.Connection;
 import com.example.userpost.model.openid.Server;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,8 +16,17 @@ public class ServerToken extends BaseToken {
   @JoinColumn(name = "server_id", nullable = false)
   private Server server;
 
-  public ServerToken(Server server, String refreshToken, Long refreshExpiredAt, String accessToken, Long accessExpiredAt) {
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "connection_id", nullable = false)
+  private Connection connection;
+
+  public ServerToken() {
+    super();
+  }
+
+  public ServerToken(Server server, Connection connection, String refreshToken, Long refreshExpiredAt, String accessToken, Long accessExpiredAt) {
     super(refreshToken, refreshExpiredAt, accessToken, accessExpiredAt);
     this.server = server;
+    this.connection = connection;
   }
 }

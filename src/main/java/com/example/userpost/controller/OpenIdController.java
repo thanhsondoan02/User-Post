@@ -4,6 +4,7 @@ import com.example.userpost.constant.*;
 import com.example.userpost.dto.request.openid.connect.ConnectRequestDto;
 import com.example.userpost.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.example.userpost.dto.request.openid.webhook.RegisterWebhookRequestDto;
+import com.example.userpost.dto.response.openid.connect.ConnectionDto;
 import com.example.userpost.dto.response.openid.event.EventDto;
 import com.example.userpost.dto.response.openid.event.ScopeDto;
 import com.example.userpost.dto.response.openid.event.ScopeListDto;
@@ -73,18 +74,21 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
     }
 
-    if (!openIdService.isConnectionExistAndPending(id)) {
+    var existConnection = openIdService.getConnectionById(id);
+    if (existConnection.isEmpty()) {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    // Update connection status in database
-    var response = openIdService.updateConnection(id, action);
-
-    // Call to server A to notify about the connection update
+    ConnectionDto response;
     if (action == ConnectionAction.ACCEPT) {
+      response = openIdService.acceptConnection(id);
       request.setClientId(response.getClientId());
       request.setClientSecret(response.getClientSecret());
+    } else {
+      response = openIdService.rejectConnection(id);
     }
+
+    // Call to server A to notify about the connection update
     apiService.updateConnection(response.getCallbackUrl(), request);
 
     return ResponseBuilder.success(response);

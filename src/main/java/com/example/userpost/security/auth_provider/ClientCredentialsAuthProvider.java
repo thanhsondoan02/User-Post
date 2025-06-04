@@ -1,5 +1,6 @@
 package com.example.userpost.security.auth_provider;
 
+import com.example.userpost.constant.ConnectionStatus;
 import com.example.userpost.constant.SecurityRole;
 import com.example.userpost.repository.ConnectionRepository;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -30,6 +31,10 @@ public class ClientCredentialsAuthProvider implements AuthenticationProvider {
 
     var connection = connectionRepository.findActiveByClientId(clientId)
       .orElseThrow(() -> new BadCredentialsException("Client id not found"));
+
+    if (connection.getStatus() != ConnectionStatus.ACCEPTED) {
+      throw new BadCredentialsException("Connection is not accepted");
+    }
 
     if (!passwordEncoder.matches(clientSecret, connection.getClientSecret())) {
       throw new BadCredentialsException("Invalid client secret");
